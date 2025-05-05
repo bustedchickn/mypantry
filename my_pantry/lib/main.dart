@@ -4,6 +4,13 @@ void main() {
   runApp(const MyApp());
 }
 
+List<Map<String, dynamic>> shoppingList = [];
+
+
+
+
+
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -30,13 +37,14 @@ class MyApp extends StatelessWidget {
         // tested with just a hot reload.
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
+      home: ShoppingListPage(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+class ShoppingListPage extends StatefulWidget {
+  @override
+  _ShoppingListPageState createState() => _ShoppingListPageState();
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -47,25 +55,25 @@ class MyHomePage extends StatefulWidget {
   // used by the build method of the State. Fields in a Widget subclass are
   // always marked "final".
 
-  final String title;
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+
+class _ShoppingListPageState extends State<ShoppingListPage> {
   int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
+  void addShoppingItem(String itemName){
+  shoppingList.add({'item': itemName, 'checked' : false});
+}
+
+void removeShoppingItem(String itemName){
+  shoppingList.removeWhere((item) => item['item'] == itemName);
+}
+
+void toggleCheck(int index){
+  shoppingList[index]['checked'] = !shoppingList[index]['checked']; 
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -76,14 +84,14 @@ class _MyHomePageState extends State<MyHomePage> {
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
+      appBar: AppBar( title: Text("Shopping List"),
         // TRY THIS: Try changing the color here to a specific color (to
         // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
         // change color while the other colors stay the same.
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // Here we take the value from the MyHomePage object that was created by
         // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
+        // title: Text(widget),
       ),
       body: Center(
         // Center is a layout widget. It takes a single child and positions it
