@@ -5,7 +5,7 @@ buildscript {
     }
 
     dependencies {
-        classpath("com.google.gms.google-services:4.4.2")
+        classpath("com.google.gms:google-services:4.4.2")
     }
 }
 
@@ -29,4 +29,7 @@ subprojects {
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
+}
+android {
+    ndkVersion = "27.0.12077973"
 }
