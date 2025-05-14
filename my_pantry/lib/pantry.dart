@@ -8,7 +8,7 @@ class PantryNav extends StatefulWidget {
 }
 
 class _PantryNavState extends State<PantryNav> {
-  int currentPageIndex = 0;
+  int currentPageIndex = 1;
 
   @override
   Widget build(BuildContext context) {
@@ -29,11 +29,11 @@ class _PantryNavState extends State<PantryNav> {
             label: 'Home',
           ),
           NavigationDestination(
-            icon: Badge(child: Icon(Icons.shop_sharp)),
+            icon: Icon(Icons.shop_sharp),
             label: 'Shopping List',
           ),
           NavigationDestination(
-            icon: Badge(label: Text('2'), child: Icon(Icons.food_bank_sharp)),
+            icon: Icon(Icons.food_bank_sharp),
             label: 'Pantry',
           ),
         ],
@@ -45,7 +45,7 @@ class _PantryNavState extends State<PantryNav> {
                 body: Center(
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pushNamed(context, '/Sign in');
+                      Navigator.pushNamed(context, '/sign in');
                     },
                     child: const Text('Sign in')
                   )
@@ -54,10 +54,7 @@ class _PantryNavState extends State<PantryNav> {
             
 
             /// Shopping List page
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              
-            ),
+            
 
             /// Pantry page
             const Padding(

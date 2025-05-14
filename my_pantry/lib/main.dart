@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
 import 'package:my_pantry/sign_in.dart';
+import 'package:my_pantry/welcome.dart';
 
 void main() => runApp(const MyPantryApp());
 
@@ -17,8 +18,9 @@ class MyPantryApp extends StatelessWidget {
       // on the SignInPage widget.
       initialRoute: '/',
       routes: {
-        '/Sign in': (context) => const SignInPage(),
-        '/': (context) => const PantryNav(),
+        '/': (context) => const Welcome(),
+        '/sign in': (context) => const SignInPage(),
+        '/pantrynav': (context) => const PantryNav(),
       },
     );
   }
