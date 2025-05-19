@@ -1,9 +1,14 @@
 plugins {
     id("com.android.application")
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+=======
+    kotlin("android")
+    id("com.google.gms.google-services") // Firebase plugin
+>>>>>>> Stashed changes
 =======
     kotlin("android")
     id("com.google.gms.google-services") // Firebase plugin
@@ -44,9 +49,12 @@ android {
 }
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 flutter {
     source = "../.."
 =======
+=======
+>>>>>>> Stashed changes
 dependencies {
     // Android core libraries
     implementation("androidx.core:core-ktx:1.12.0")
@@ -64,5 +72,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 }
