@@ -7,7 +7,6 @@ import 'package:my_pantry/sign_in.dart';
 
 void main() async {
   
-  //no Idea what this line does.
   WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
