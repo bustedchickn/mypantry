@@ -1,4 +1,6 @@
-// import 'package:firebase_core/firebase_core.dart';
+
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
 import 'package:my_pantry/sign_in.dart';
@@ -6,12 +8,14 @@ import 'package:my_pantry/welcome.dart';
 import 'package:my_pantry/shopping.dart';
 
 
+
 void main() async {
   
-  //no Idea what this line does.
-  // WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
-  //await Firebase.initializeApp();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
 
   runApp(const MyPantryApp());
 }
