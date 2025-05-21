@@ -1,8 +1,11 @@
+
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
 import 'package:my_pantry/sign_in.dart';
+import 'package:my_pantry/welcome.dart';
+import 'package:my_pantry/shopping.dart';
 
 
 
@@ -29,8 +32,10 @@ const MyPantryApp({super.key});
       // on the SignInPage widget.
       initialRoute: '/',
       routes: {
-        '/Sign in': (context) => const SignInPage(),
-        '/': (context) => const PantryNav(),
+        '/': (context) => const Welcome(),
+        '/sign in': (context) => const SignInPage(),
+        '/pantry': (context) => const PantryPage(),
+        '/shopping': (context) => const ShoppingListPage(),
       },
     );
   }
