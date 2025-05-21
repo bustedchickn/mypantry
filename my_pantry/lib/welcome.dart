@@ -19,9 +19,17 @@ class Welcome extends StatelessWidget {
             ElevatedButton(
               
               onPressed: () {
-                Navigator.pushNamed(context, '/pantrynav');
+                Navigator.pushReplacementNamed(context, '/pantry');
               },
-              child: const Text('Go to App'))
+              child: const Text('pantry page')
+            ),
+            ElevatedButton(
+              
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/shopping');
+              },
+              child: const Text('shoppingList page')
+            ),
           ]
         )
       ),
