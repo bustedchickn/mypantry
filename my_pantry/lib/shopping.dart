@@ -106,9 +106,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
               },
             ),
           ),
-          Padding(
-          padding: const EdgeInsets.all(8.0),
+          Center(
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
             FilledButton.tonalIcon(
               

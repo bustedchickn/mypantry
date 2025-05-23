@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
+import 'package:my_pantry/sign_up.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/welcome.dart';
 import 'package:my_pantry/shopping.dart';
@@ -29,11 +30,12 @@ const MyPantryApp({super.key});
       title: 'My Pantry',
       // Start the app with the "/" named route.
       // The app starts
-      // on the SignInPage widget.
+      // on the Welcome page.
       initialRoute: '/',
       routes: {
         '/': (context) => const Welcome(),
         '/sign in': (context) => const SignInPage(),
+        '/sign up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
       },

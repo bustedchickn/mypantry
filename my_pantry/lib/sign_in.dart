@@ -7,7 +7,18 @@ class SignInPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Sign in")),
-      body: Center(child: Text("This is the Sign in Page")),
+      body: Center(
+        child: Column(
+          children: [
+            Text("This is the Sign in Page"),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/sign up');
+              }
+              , child: Text('Sign up'))
+          ]
+        )
+      )
     );
   }
 }
