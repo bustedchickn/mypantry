@@ -29,7 +29,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         .get();
     setState(() {
       shoppingList = snapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+          .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
       controllers = shoppingList
           .map((item) => TextEditingController(text: item['item']))
