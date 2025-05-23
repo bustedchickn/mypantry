@@ -1,5 +1,6 @@
 
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
@@ -16,6 +17,9 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  // Sign in anonymously
+  await FirebaseAuth.instance.signInAnonymously();
 
   runApp(const MyPantryApp());
 }
@@ -37,6 +41,7 @@ const MyPantryApp({super.key});
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
       },
+
     );
   }
 }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class ShoppingListPage extends StatefulWidget {
   const ShoppingListPage({super.key});
@@ -7,32 +9,69 @@ class ShoppingListPage extends StatefulWidget {
 }
 
 class _ShoppingListPageState extends State<ShoppingListPage> {
-    List<Map<String, dynamic>> shoppingList = [];
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  List<Map<String, dynamic>> shoppingList = [];
   final FocusNode _ghostFocusNode = FocusNode();
   final TextEditingController _ghostController = TextEditingController();
   List<TextEditingController> controllers = [];
 
-  void addItem(String itemName) {
-    if (itemName.trim().isEmpty) return;
+  @override
+  void initState() {
+    super.initState();
+    fetchShoppingList();
+  }
+
+  Future<void> fetchShoppingList() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final snapshot = await _firestore
+        .collection('shoppingList')
+        .where('userId', isEqualTo: userId) // Filter by userId
+        .get();
     setState(() {
-      shoppingList.add({'item': itemName.trim(), 'checked': false});
-      controllers.add(TextEditingController(text:itemName.trim()));
+      shoppingList = snapshot.docs
+          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+          .toList();
+      controllers = shoppingList
+          .map((item) => TextEditingController(text: item['item']))
+          .toList();
+    });
+  }
+
+  Future<void> addItem(String itemName) async {
+    if (itemName.trim().isEmpty) return;
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+    final docRef = await _firestore.collection('shoppingList').add({
+      'item': itemName.trim(),
+      'checked': false,
+      'userId': userId, // Add userId field
+    });
+    setState(() {
+      shoppingList.add({'id': docRef.id, 'item': itemName.trim(), 'checked': false, 'userId': userId});
+      controllers.add(TextEditingController(text: itemName.trim()));
       _ghostController.clear();
     });
   }
 
-    void updateItem(int index, String newText) {
-    shoppingList[index]['item'] = newText;
-    
-  }
-
-    void toggleCheck(int index) {
+  Future<void> updateItem(int index, String newText) async {
+    final id = shoppingList[index]['id'];
+    await _firestore.collection('shoppingList').doc(id).update({'item': newText});
     setState(() {
-      shoppingList[index]['checked'] = !shoppingList[index]['checked'];
+      shoppingList[index]['item'] = newText;
     });
   }
 
-    void removeItem(int index) {
+  Future<void> toggleCheck(int index) async {
+    final id = shoppingList[index]['id'];
+    final newCheckedValue = !shoppingList[index]['checked'];
+    await _firestore.collection('shoppingList').doc(id).update({'checked': newCheckedValue});
+    setState(() {
+      shoppingList[index]['checked'] = newCheckedValue;
+    });
+  }
+
+  Future<void> removeItem(int index) async {
+    final id = shoppingList[index]['id'];
+    await _firestore.collection('shoppingList').doc(id).delete();
     setState(() {
       shoppingList.removeAt(index);
       controllers.removeAt(index);
