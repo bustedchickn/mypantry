@@ -6,29 +6,16 @@ class Welcome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('welcome to Shelf Together!')),
+      appBar: AppBar(title: Text('Welcome to Shelf Together!')),
       body: Center(
         child: Column(
           children: <Widget>[
+            Text('This is your personal pantry app that will... (description here: )'),
             ElevatedButton(
               onPressed: () {
               Navigator.pushNamed(context, '/sign in');
               },
                 child: const Text('Sign in'),
-            ),
-            ElevatedButton(
-              
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/pantry');
-              },
-              child: const Text('pantry page')
-            ),
-            ElevatedButton(
-              
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/shopping');
-              },
-              child: const Text('shoppingList page')
             ),
           ]
         )

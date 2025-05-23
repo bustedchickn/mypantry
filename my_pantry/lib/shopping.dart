@@ -107,34 +107,50 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             ),
           ),
           Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: <Widget>[
-            FilledButton.tonalIcon(
-              
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/');
-              },
-              icon: Icon(Icons.home, color: Colors.red),
-              label: const Text('welcome page')
-            ),
-            FilledButton.icon(
-              
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/shopping');
-              },
-              icon: Icon(Icons.shopping_bag, color: Colors.green),
-              label: const Text('shopping page'),
-            ),
-            FilledButton.tonalIcon(
-              
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/pantry');
-              },
-              icon: Icon(Icons.shelves, color: Colors.blue),
-              label: const Text('pantry page')
-            ),]
-          )),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: <Widget>[
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.home, color: Colors.red),
+                    TextButton(
+                      
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/');
+                      },
+                      child: const Text('welcome page')
+                    ),
+                  ]
+                ),
+                
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.shopping_bag, color: Colors.green),
+                    FilledButton(
+                      
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/shopping');
+                      },
+                      child: const Text('shopping page')
+                    ),
+                  ]
+                ),
+
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.shelves, color: Colors.blue),
+                    TextButton(
+                      
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/pantry');
+                      },
+                      child: const Text('pantry page')
+                    ),
+                  ]
+                ),
+              ]
+            )
+          ),
         ],
       ),
     );
