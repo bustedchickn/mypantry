@@ -38,18 +38,34 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   }
 
   Future<void> addItem(String itemName) async {
-    if (itemName.trim().isEmpty) return;
-    final userId = FirebaseAuth.instance.currentUser!.uid;
-    final docRef = await _firestore.collection('shoppingList').add({
-      'item': itemName.trim(),
-      'checked': false,
-      'userId': userId, // Add userId field
-    });
-    setState(() {
-      shoppingList.add({'id': docRef.id, 'item': itemName.trim(), 'checked': false, 'userId': userId});
-      controllers.add(TextEditingController(text: itemName.trim()));
-      _ghostController.clear();
-    });
+    if (itemName.trim().isEmpty) return; // Prevent adding empty items
+    final userId = FirebaseAuth.instance.currentUser?.uid; // Get the current user's UID
+    if (userId == null) {
+      print('Error: User is not authenticated.');
+      return;
+    }
+    try {
+      // Add the item to Firestore
+      final docRef = await FirebaseFirestore.instance.collection('shoppingList').add({
+        'item': itemName.trim(),
+        'checked': false,
+        'userId': userId, // Add the userId field
+      });
+
+      // Update the local state
+      setState(() {
+        shoppingList.add({
+          'id': docRef.id,
+          'item': itemName.trim(),
+          'checked': false,
+          'userId': userId,
+        });
+        controllers.add(TextEditingController(text: itemName.trim()));
+        _ghostController.clear(); // Clear the input field
+      });
+    } catch (e) {
+      print('Error adding item: $e'); // Log any errors
+    }
   }
 
   Future<void> updateItem(int index, String newText) async {
@@ -76,6 +92,11 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
       shoppingList.removeAt(index);
       controllers.removeAt(index);
     });
+  }
+
+  Future<void> signInAnonymously() async {
+    final userCredential = await FirebaseAuth.instance.signInAnonymously();
+    print('Signed in as: ${userCredential.user?.uid}');
   }
 
   @override
@@ -139,6 +160,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 border: OutlineInputBorder(),
               ),
               onSubmitted: (value) {
+                // print(FirebaseAuth.instance.currentUser?.uid);
                 addItem(value);
                 // Refocus to keep adding
                 FocusScope.of(context).requestFocus(_ghostFocusNode);

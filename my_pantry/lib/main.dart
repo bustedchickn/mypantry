@@ -8,19 +8,29 @@ import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/welcome.dart';
 import 'package:my_pantry/shopping.dart';
 
-
-
 void main() async {
-  
-  WidgetsFlutterBinding.ensureInitialized();
+    WidgetsFlutterBinding.ensureInitialized();
 
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // Sign in anonymously
-  await FirebaseAuth.instance.signInAnonymously();
+try {
+    // Hard-coded email and password
+    const String hardCodedEmail = "test@email.com";
+    const String hardCodedPassword = "password123";
 
+    // Sign in with email and password
+    final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: hardCodedEmail,
+      password: hardCodedPassword,
+    );
+
+    print("Signed in as: ${userCredential.user?.uid}");
+  } catch (e) {
+    print("Error signing in: $e");
+  }
+  
   runApp(const MyPantryApp());
 }
 
@@ -41,7 +51,6 @@ const MyPantryApp({super.key});
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
       },
-
     );
   }
 }
