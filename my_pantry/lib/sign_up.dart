@@ -77,6 +77,12 @@ class _SignUpPageState extends State<SignUpPage> {
               onPressed: _signUp,
               child: const Text("Sign Up"),
             ),
+            TextButton(
+              onPressed: () {
+                Navigator.pushReplacementNamed(context, '/sign_in');
+              },
+              child: const Text("Already have an account? Sign in"),
+            ),
           ],
         ),
       ),
