@@ -13,7 +13,7 @@ class Welcome extends StatelessWidget {
             Text('This is your personal pantry app that will... (description here: )'),
             ElevatedButton(
               onPressed: () {
-              Navigator.pushNamed(context, '/sign in');
+              Navigator.pushNamed(context, '/sign_in');
               },
                 child: const Text('Sign in'),
             ),
