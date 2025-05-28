@@ -3,6 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
+import 'package:my_pantry/welcome.dart';
 import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
@@ -23,8 +24,17 @@ class MyPantryApp extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData(useMaterial3: true),
       title: 'My Pantry',
+      // Start the app with the "/" named route.
+      // The app starts
+      // on the Welcome page.
+      initialRoute: '/',
+      routes: {
+        
+        '/sign in': (context) => const SignInPage(),
+        '/sign up': (context) => const SignUpPage(),
       home: const AuthWrapper(),
       routes: {
+        '/': (context) => const Welcome(),
         '/sign_in': (context) => const SignInPage(),
         '/sign_up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),
@@ -48,7 +58,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return const PantryPage(); // Signed in
         } else {
-          return const SignInPage(); // Not signed in
+          return const Welcome(); // Not signed in
         }
       },
     );
