@@ -27,14 +27,8 @@ class MyPantryApp extends StatelessWidget {
       // Start the app with the "/" named route.
       // The app starts
       // on the Welcome page.
-      initialRoute: '/',
-      routes: {
-        
-        '/sign in': (context) => const SignInPage(),
-        '/sign up': (context) => const SignUpPage(),
       home: const AuthWrapper(),
       routes: {
-        '/': (context) => const Welcome(),
         '/sign_in': (context) => const SignInPage(),
         '/sign_up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),

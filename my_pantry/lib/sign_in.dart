@@ -57,7 +57,7 @@ class _SignInPageState extends State<SignInPage> {
             ElevatedButton(onPressed: _signIn, child: const Text("Sign In")),
             TextButton(
               onPressed: () {
-                Navigator.pushReplacementNamed(context, '/sign_up');
+                Navigator.pushNamed(context, '/sign_up');
               },
               child: const Text("Don't have an account? Sign up"),
             ),

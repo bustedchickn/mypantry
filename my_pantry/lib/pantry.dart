@@ -11,6 +11,8 @@ class PantryPage extends StatelessWidget {
         child: Column(
           children: <Widget>[
             Text('pantry page'),
+            
+            // this is the Bottom Navigation bar
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -23,7 +25,7 @@ class PantryPage extends StatelessWidget {
                         onPressed: () {
                           Navigator.pushReplacementNamed(context, '/');
                         },
-                        child: const Text('welcome page')
+                        child: const Text('new page(does not do anything right now)')
                       ),
                     ]
                   ),
