@@ -53,38 +53,67 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
       // Select the first list by default
       if (shoppingLists.isNotEmpty && selectedListId == null) {
         selectedListId = shoppingLists.first['id'];
-        fetchItemsForList(selectedListId!);
+        listenToItems(selectedListId!);
       }
     });
   }
 
-  Future<void> fetchItemsForList(String listId) async {
-    final snapshot = await _firestore
+  void listenToItems(String listId) {
+    _firestore
         .collection('shoppingLists')
         .doc(listId)
         .collection('items')
-        .get();
-    setState(() {
-      items = snapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
-          .toList();
-      controllers = items
-          .map((item) => TextEditingController(text: item['item']))
-          .toList();
+        .orderBy('order')
+        .snapshots()
+        .listen((snapshot) {
+      setState(() {
+        items = snapshot.docs
+            .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+            .toList();
+        controllers = items
+            .map((item) => TextEditingController(text: item['item']))
+            .toList();
+      });
     });
   }
 
-  Future<void> addItemToList(String listId, String itemName) async {
-    await _firestore
+  Future<void> reorderItems(int oldIndex, int newIndex) async {
+  if (newIndex > oldIndex) newIndex -= 1;
+
+  final item = items.removeAt(oldIndex);
+  final controller = controllers.removeAt(oldIndex);
+  items.insert(newIndex, item);
+  controllers.insert(newIndex, controller);
+
+  // Update order field in Firestore
+  final batch = _firestore.batch();
+  for (int i = 0; i < items.length; i++) {
+    final docRef = _firestore
         .collection('shoppingLists')
-        .doc(listId)
+        .doc(selectedListId)
         .collection('items')
-        .add({
-      'item': itemName,
-      'checked': false,
-    });
-    fetchItemsForList(listId);
+        .doc(items[i]['id']);
+    batch.update(docRef, {'order': i});
   }
+
+  await batch.commit();
+  setState(() {});
+}
+
+
+  Future<void> addItemToList(String listId, String itemName) async {
+  await _firestore
+      .collection('shoppingLists')
+      .doc(listId)
+      .collection('items')
+      .add({
+    'item': itemName,
+    'checked': false,
+    'order': items.length, // add to the end
+  });
+  listenToItems(listId);
+  }
+
 
   Future<void> updateItem(String listId, int index, String newText) async {
     final id = items[index]['id'];
@@ -137,12 +166,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
     super.dispose();
   }
 
-  Widget buildItem(int index) {
+  Widget buildItem(int index, {required Key key}) {
     final item = items[index];
     final controller = controllers[index];
 
     return Dismissible(
-      key: Key(item['id']),
+      key: key,
       direction: DismissDirection.endToStart,
       background: Container(
         color: Colors.red,
@@ -196,7 +225,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                   setState(() {
                     selectedListId = value;
                   });
-                  if (value != null) fetchItemsForList(value);
+                  if (value != null) listenToItems(value);
                 },
               ),
             ),
@@ -289,9 +318,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           // Items
           if (selectedListId != null)
             Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) => buildItem(index),
+              child: ReorderableListView(
+                onReorder: (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
+                children: [
+                  for (int index = 0; index < items.length; index++)
+                    buildItem(index, key: ValueKey(items[index]['id']))
+                ],
               ),
             ),
           if (selectedListId != null)
