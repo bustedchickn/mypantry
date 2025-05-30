@@ -7,6 +7,40 @@ class PantryPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text("Pantry")),
+      // this is the drawer next to the appbar
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.yellow),
+              child: Text('Drawer Header'),
+            ),
+
+            ListTile(
+              title: const Text('Pantry'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/pantry');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Settings'),
+              onTap: () {
+
+              },
+            ),
+
+            ListTile(
+              title: const Text('Sign out'),
+              onTap: () {
+
+              },
+            ),
+
+          ],
+        )
+      ),
       body: Center(
         child: Column(
           children: <Widget>[
@@ -29,6 +63,19 @@ class PantryPage extends StatelessWidget {
                       ),
                     ]
                   ),
+
+                  Column(
+                  children: <Widget>[
+                    Icon(Icons.shelves, color: Colors.blue),
+                    FilledButton(
+                      
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/pantry');
+                      },
+                      child: const Text('pantry page')
+                    ),
+                  ]
+                ),
                 
                   Column(
                     children: <Widget>[
@@ -39,19 +86,6 @@ class PantryPage extends StatelessWidget {
                           Navigator.pushReplacementNamed(context, '/shopping');
                         },
                         child: const Text('shopping page')
-                      ),
-                    ]
-                  ),
-
-                  Column(
-                    children: <Widget>[
-                      Icon(Icons.shelves, color: Colors.blue),
-                      FilledButton(
-                        
-                        onPressed: () {
-                          Navigator.pushReplacementNamed(context, '/pantry');
-                        },
-                        child: const Text('pantry page')
                       ),
                     ]
                   ),
