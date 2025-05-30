@@ -205,7 +205,44 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
-      appBar: AppBar(title: Text('Shopping Lists')),
+      appBar: AppBar(title: const Text('Shopping Lists'),
+      ),
+      // this is the drawer next to the appbar
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.yellow),
+              child: Text('Drawer Header'),
+            ),
+
+            ListTile(
+              title: const Text('Pantry'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/pantry');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Settings'),
+              onTap: () {
+
+              },
+            ),
+
+            ListTile(
+              title: const Text('Sign out'),
+              onTap: () {
+
+              },
+            ),
+
+          ],
+        )
+      ),
+
+      // body
       body: Column(
         children: [
           // List selector
@@ -345,7 +382,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 },
               ),
             ),
-            
+
             // this is the Bottom Navigation bar
             Center(
             child: Row(
@@ -366,19 +403,6 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 
                 Column(
                   children: <Widget>[
-                    Icon(Icons.shopping_bag, color: Colors.green),
-                    FilledButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/shopping');
-                      },
-                      child: const Text('shopping page')
-                    ),
-                  ]
-                ),
-
-                Column(
-                  children: <Widget>[
                     Icon(Icons.shelves, color: Colors.blue),
                     TextButton(
                       
@@ -386,6 +410,19 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                         Navigator.pushReplacementNamed(context, '/pantry');
                       },
                       child: const Text('pantry page')
+                    ),
+                  ]
+                ),
+
+                Column(
+                  children: <Widget>[
+                    Icon(Icons.shopping_bag, color: Colors.green),
+                    FilledButton(
+                      
+                      onPressed: () {
+                        Navigator.pushReplacementNamed(context, '/shopping');
+                      },
+                      child: const Text('shopping page')
                     ),
                   ]
                 ),
