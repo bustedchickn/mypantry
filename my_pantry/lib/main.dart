@@ -8,13 +8,22 @@ import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
 
+import 'package:flutter/material.dart';
+
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  runApp(const MyPantryApp());
+
+  // Check if Firebase is already initialized
+  try {
+    await Firebase.initializeApp();
+  } catch (e) {
+    print("Firebase already initialized: $e");
+  }
+
+  runApp(MyPantryApp());
 }
+
 
 class MyPantryApp extends StatelessWidget {
   const MyPantryApp({super.key});

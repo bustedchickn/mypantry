@@ -9,7 +9,7 @@ plugins {
 android {
     namespace = "com.example.my_pantry"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    ndkVersion = "29.0.13599879"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
@@ -22,7 +22,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.my_pantry"
-        minSdk = flutter.minSdkVersion
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
