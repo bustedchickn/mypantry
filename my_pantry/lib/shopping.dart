@@ -48,7 +48,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         .get();
     setState(() {
       shoppingLists = snapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+          .map((doc) => {'id': doc.id, ...doc.data()})
           .toList();
       // Select the first list by default
       if (shoppingLists.isNotEmpty && selectedListId == null) {
@@ -68,7 +68,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         .listen((snapshot) {
       setState(() {
         items = snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>})
+            .map((doc) => {'id': doc.id, ...doc.data()})
             .toList();
         controllers = items
             .map((item) => TextEditingController(text: item['item']))
