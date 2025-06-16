@@ -1,7 +1,7 @@
 buildscript {
     repositories{
         google()
-        jcenter()
+        mavenCentral()
     }
 
     dependencies {
@@ -26,6 +26,7 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    
 }
 
 tasks.register<Delete>("clean") {
