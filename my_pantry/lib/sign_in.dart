@@ -45,10 +45,12 @@ class _SignInPageState extends State<SignInPage> {
         child: Column(
           children: [
             TextField(
+              autofillHints: [AutofillHints.email],
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
+              autofillHints: [AutofillHints.password],
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
