@@ -22,7 +22,7 @@ class _SignInPageState extends State<SignInPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Signed in successfully!')),
       );
-      Navigator.pushReplacementNamed(context, '/pantry');
+      Navigator.pushNamed(context, '/pantry');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),

@@ -6,8 +6,11 @@ class SettingsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
+        
         title: const Text('Settings'),
+        automaticallyImplyLeading: true,
       ),
       
       // nav drawer
@@ -23,23 +26,23 @@ class SettingsPage extends StatelessWidget {
             ListTile(
               title: const Text('Pantry'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/pantry');
+                Navigator.pushNamed(context, '/pantry');
               },
             ),
 
             ListTile(
               title: const Text('Shopping List'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/shopping');
+                Navigator.pushNamed(context, '/shopping');
               },
             ),
 
             ListTile(title: const Text('Settings'), onTap: () {
-              Navigator.pushReplacementNamed(context, '/settings');
+              Navigator.pushNamed(context, '/settings');
             }),
 
             ListTile(title: const Text('Sign out'), onTap: () {
-              Navigator.pushReplacementNamed(context, '/sign_in');
+              Navigator.pushNamed(context, '/sign_in');
             }),
           ],
         ),
@@ -48,6 +51,7 @@ class SettingsPage extends StatelessWidget {
 
       body: ListView(
         children: [
+          
           ListTile(
             leading: const Icon(Icons.person),
             title: const Text('Account'),
