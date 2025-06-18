@@ -21,7 +21,7 @@ void main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
   } catch (e) {
-    printToConsole("Firebase already initialized: $e");
+    print("Firebase already initialized: $e");
   }
 
   runApp(MyPantryApp());
