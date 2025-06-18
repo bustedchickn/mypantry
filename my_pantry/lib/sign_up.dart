@@ -60,14 +60,17 @@ class _SignUpPageState extends State<SignUpPage> {
         child: Column(
           children: [
             TextField(
+              autofillHints: [AutofillHints.name],
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
             ),
             TextField(
+              autofillHints: [AutofillHints.email],
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
+              autofillHints: [AutofillHints.newPassword],
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,
