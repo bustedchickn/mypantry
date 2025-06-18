@@ -8,7 +8,6 @@ import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
 
-import 'package:flutter/material.dart';
 
 
 void main() async {
@@ -16,7 +15,9 @@ void main() async {
 
   // Check if Firebase is already initialized
   try {
-    await Firebase.initializeApp();
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   } catch (e) {
     print("Firebase already initialized: $e");
   }
