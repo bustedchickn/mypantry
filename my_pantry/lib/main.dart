@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_pantry/settings.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
@@ -43,6 +44,7 @@ class MyPantryApp extends StatelessWidget {
         '/sign_up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
+        '/settings':(context) => const SettingsPage(),
       },
     );
   }
