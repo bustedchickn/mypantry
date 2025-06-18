@@ -231,7 +231,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
               },
             ),
 
-            ListTile(title: const Text('Settings'), onTap: () {}),
+            ListTile(title: const Text('Settings'), onTap: () {
+              Navigator.pushReplacementNamed(context, '/settings');
+            }),
 
             ListTile(title: const Text('Sign out'), onTap: () {}),
           ],

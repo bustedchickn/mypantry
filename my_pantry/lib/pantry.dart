@@ -35,7 +35,7 @@ class PantryPage extends StatelessWidget {
             ListTile(
               title: const Text('Settings'),
               onTap: () {
-
+                Navigator.pushReplacementNamed(context, '/settings');
               },
             ),
 
