@@ -42,7 +42,7 @@ class PantryPage extends StatelessWidget {
             ListTile(
               title: const Text('Sign out'),
               onTap: () {
-
+                Navigator.pushReplacementNamed(context, '/sign_in');
               },
             ),
 

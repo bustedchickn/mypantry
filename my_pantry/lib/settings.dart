@@ -9,6 +9,43 @@ class SettingsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Settings'),
       ),
+      
+      // nav drawer
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.yellow),
+              child: Text('Drawer Header'),
+            ),
+
+            ListTile(
+              title: const Text('Pantry'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/pantry');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Shopping List'),
+              onTap: () {
+                Navigator.pushReplacementNamed(context, '/shopping');
+              },
+            ),
+
+            ListTile(title: const Text('Settings'), onTap: () {
+              Navigator.pushReplacementNamed(context, '/settings');
+            }),
+
+            ListTile(title: const Text('Sign out'), onTap: () {
+              Navigator.pushReplacementNamed(context, '/sign_in');
+            }),
+          ],
+        ),
+      ),
+
+
       body: ListView(
         children: [
           ListTile(
