@@ -33,7 +33,6 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   }
 
   Future<void> addUserToList(String listId, String userId) async {
-    print("This is a test");
     await _firestore.collection('shoppingLists').doc(listId).update({
       'sharedWith': FieldValue.arrayUnion([userId]),
     });
@@ -193,8 +192,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           controller: controller,
           decoration: InputDecoration(border: InputBorder.none),
           onChanged: (value) {
-            if (selectedListId != null)
-              updateItem(selectedListId!, index, value);
+            if (selectedListId != null){
+                updateItem(selectedListId!, index, value);
+              }
           },
         ),
         trailing: Icon(Icons.drag_handle),

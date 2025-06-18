@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:my_pantry/pantry.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -30,11 +31,14 @@ class _SignUpPageState extends State<SignUpPage> {
         'email': _emailController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
       });
-
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sign up successful!')),
       );
-
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const PantryPage()),
+      );
       // Optionally, navigate to a home screen
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -63,11 +67,13 @@ class _SignUpPageState extends State<SignUpPage> {
               autofillHints: [AutofillHints.name],
               controller: _nameController,
               decoration: const InputDecoration(labelText: 'Name'),
+              textInputAction: TextInputAction.next,
             ),
             TextField(
               autofillHints: [AutofillHints.email],
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
+              textInputAction: TextInputAction.next,
             ),
             TextField(
               autofillHints: [AutofillHints.newPassword],
