@@ -403,51 +403,7 @@ class _PantryPageState extends State<PantryPage> {
             ),
 
             // this is the Bottom Navigation bar
-            Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.home, color: Colors.red),
-                    TextButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/');
-                      },
-                      child: const Text('new page(does not do anything right now)')
-                    ),
-                  ]
-                ),
-                
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.shelves, color: Colors.blue),
-                    FilledButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/pantry');
-                      },
-                      child: const Text('pantry page')
-                    ),
-                  ]
-                ),
-
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.shopping_bag, color: Colors.green),
-                    TextButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/shopping');
-                      },
-                      child: const Text('shopping page')
-                    ),
-                  ]
-                ),
-              ]
-            )
-          ),
+            
         ],
       ),
     );
