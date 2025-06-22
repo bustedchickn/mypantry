@@ -33,7 +33,6 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   }
 
   Future<void> addUserToList(String listId, String userId) async {
-    print("This is a test");
     await _firestore.collection('shoppingLists').doc(listId).update({
       'sharedWith': FieldValue.arrayUnion([userId]),
     });
@@ -42,14 +41,14 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
   Future<void> fetchShoppingLists() async {
     final userId = FirebaseAuth.instance.currentUser!.uid;
-    final snapshot = await _firestore
-        .collection('shoppingLists')
-        .where('sharedWith', arrayContains: userId)
-        .get();
+    final snapshot =
+        await _firestore
+            .collection('shoppingLists')
+            .where('sharedWith', arrayContains: userId)
+            .get();
     setState(() {
-      shoppingLists = snapshot.docs
-          .map((doc) => {'id': doc.id, ...doc.data()})
-          .toList();
+      shoppingLists =
+          snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
       // Select the first list by default
       if (shoppingLists.isNotEmpty && selectedListId == null) {
         selectedListId = shoppingLists.first['id'];
@@ -66,54 +65,54 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         .orderBy('order')
         .snapshots()
         .listen((snapshot) {
-      setState(() {
-        items = snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList();
-        controllers = items
-            .map((item) => TextEditingController(text: item['item']))
-            .toList();
-      });
-    });
+          setState(() {
+            items =
+                snapshot.docs
+                    .map((doc) => {'id': doc.id, ...doc.data()})
+                    .toList();
+            controllers =
+                items
+                    .map((item) => TextEditingController(text: item['item']))
+                    .toList();
+          });
+        });
   }
 
   Future<void> reorderItems(int oldIndex, int newIndex) async {
-  if (newIndex > oldIndex) newIndex -= 1;
+    if (newIndex > oldIndex) newIndex -= 1;
 
-  final item = items.removeAt(oldIndex);
-  final controller = controllers.removeAt(oldIndex);
-  items.insert(newIndex, item);
-  controllers.insert(newIndex, controller);
+    final item = items.removeAt(oldIndex);
+    final controller = controllers.removeAt(oldIndex);
+    items.insert(newIndex, item);
+    controllers.insert(newIndex, controller);
 
-  // Update order field in Firestore
-  final batch = _firestore.batch();
-  for (int i = 0; i < items.length; i++) {
-    final docRef = _firestore
-        .collection('shoppingLists')
-        .doc(selectedListId)
-        .collection('items')
-        .doc(items[i]['id']);
-    batch.update(docRef, {'order': i});
+    // Update order field in Firestore
+    final batch = _firestore.batch();
+    for (int i = 0; i < items.length; i++) {
+      final docRef = _firestore
+          .collection('shoppingLists')
+          .doc(selectedListId)
+          .collection('items')
+          .doc(items[i]['id']);
+      batch.update(docRef, {'order': i});
+    }
+
+    await batch.commit();
+    setState(() {});
   }
-
-  await batch.commit();
-  setState(() {});
-}
-
 
   Future<void> addItemToList(String listId, String itemName) async {
-  await _firestore
-      .collection('shoppingLists')
-      .doc(listId)
-      .collection('items')
-      .add({
-    'item': itemName,
-    'checked': false,
-    'order': items.length, // add to the end
-  });
-  listenToItems(listId);
+    await _firestore
+        .collection('shoppingLists')
+        .doc(listId)
+        .collection('items')
+        .add({
+          'item': itemName,
+          'checked': false,
+          'order': items.length, // add to the end
+        });
+    listenToItems(listId);
   }
-
 
   Future<void> updateItem(String listId, int index, String newText) async {
     final id = items[index]['id'];
@@ -193,7 +192,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           controller: controller,
           decoration: InputDecoration(border: InputBorder.none),
           onChanged: (value) {
-            if (selectedListId != null) updateItem(selectedListId!, index, value);
+            if (selectedListId != null){
+                updateItem(selectedListId!, index, value);
+              }
           },
         ),
         trailing: Icon(Icons.drag_handle),
@@ -205,8 +206,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Shopping Lists'),
-      ),
+      appBar: AppBar(title: const Text('Shopping Lists')),
       // this is the drawer next to the appbar
       endDrawer: Drawer(
         child: ListView(
@@ -220,26 +220,26 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             ListTile(
               title: const Text('Pantry'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/pantry');
+                Navigator.pushNamed(context, '/pantry');
               },
             ),
 
             ListTile(
-              title: const Text('Settings'),
+              title: const Text('Shopping List'),
               onTap: () {
-
+                Navigator.pushNamed(context, '/shopping');
               },
             ),
 
-            ListTile(
-              title: const Text('Sign out'),
-              onTap: () {
+            ListTile(title: const Text('Settings'), onTap: () {
+              Navigator.pushNamed(context, '/settings');
+            }),
 
-              },
-            ),
-
+            ListTile(title: const Text('Sign out'), onTap: () {
+              Navigator.pushNamed(context, '/sign_in');
+            }),
           ],
-        )
+        ),
       ),
 
       // body
@@ -252,12 +252,13 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
               child: DropdownButton<String>(
                 value: selectedListId,
                 hint: Text('Select a list'),
-                items: shoppingLists.map((list) {
-                  return DropdownMenuItem<String>(
-                    value: list['id'],
-                    child: Text(list['name'] ?? 'Unnamed List'),
-                  );
-                }).toList(),
+                items:
+                    shoppingLists.map((list) {
+                      return DropdownMenuItem<String>(
+                        value: list['id'],
+                        child: Text(list['name'] ?? 'Unnamed List'),
+                      );
+                    }).toList(),
                 onChanged: (value) {
                   setState(() {
                     selectedListId = value;
@@ -274,30 +275,33 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 final controller = TextEditingController();
                 await showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Create Shopping List'),
-                    content: TextField(
-                      controller: controller,
-                      decoration: InputDecoration(hintText: 'List name'),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text('Cancel'),
+                  builder:
+                      (context) => AlertDialog(
+                        title: Text('Create Shopping List'),
+                        content: TextField(
+                          controller: controller,
+                          decoration: InputDecoration(hintText: 'List name'),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              if (controller.text.trim().isNotEmpty) {
+                                createShoppingList(controller.text.trim(), [
+                                  userId,
+                                ]);
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: Text('Create'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () {
-                          if (controller.text.trim().isNotEmpty) {
-                            createShoppingList(controller.text.trim(), [userId]);
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: Text('Create'),
-                      ),
-                    ],
-                  ),
                 );
               },
               child: Text('Create New List'),
@@ -312,40 +316,49 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                   final controller = TextEditingController();
                   await showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Share List'),
-                      content: TextField(
-                        controller: controller,
-                        decoration: InputDecoration(hintText: 'User UID to share with'),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final uid = controller.text.trim();
-                            if (uid.isNotEmpty) {
-                              try {
-                                await addUserToList(selectedListId!, uid);
+                    builder:
+                        (context) => AlertDialog(
+                          title: Text('Share List'),
+                          content: TextField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                              hintText: 'User UID to share with',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('List shared with UID $uid')),
-                                );
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error sharing: $e')),
-                                );
-                              }
-                            }
-                          },
-                          child: Text('Share'),
+                              },
+                              child: Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                final uid = controller.text.trim();
+                                if (uid.isNotEmpty) {
+                                  try {
+                                    await addUserToList(selectedListId!, uid);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'List shared with UID $uid',
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error sharing: $e'),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: Text('Share'),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
                   );
                 },
                 child: Text('Share This List'),
@@ -356,10 +369,11 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           if (selectedListId != null)
             Expanded(
               child: ReorderableListView(
-                onReorder: (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
+                onReorder:
+                    (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
                 children: [
                   for (int index = 0; index < items.length; index++)
-                    buildItem(index, key: ValueKey(items[index]['id']))
+                    buildItem(index, key: ValueKey(items[index]['id'])),
                 ],
               ),
             ),
@@ -382,53 +396,6 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 },
               ),
             ),
-
-            // this is the Bottom Navigation bar
-            Center(
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget>[
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.home, color: Colors.red),
-                    TextButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/');
-                      },
-                      child: const Text('new page(does not do anything right now)')
-                    ),
-                  ]
-                ),
-                
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.shelves, color: Colors.blue),
-                    TextButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/pantry');
-                      },
-                      child: const Text('pantry page')
-                    ),
-                  ]
-                ),
-
-                Column(
-                  children: <Widget>[
-                    Icon(Icons.shopping_bag, color: Colors.green),
-                    FilledButton(
-                      
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(context, '/shopping');
-                      },
-                      child: const Text('shopping page')
-                    ),
-                  ]
-                ),
-              ]
-            )
-          ),
         ],
       ),
     );

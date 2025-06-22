@@ -18,10 +18,11 @@ class _SignInPageState extends State<SignInPage> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Signed in successfully!')),
       );
-      Navigator.pushReplacementNamed(context, '/pantry');
+      Navigator.pushNamed(context, '/pantry');
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),
@@ -45,10 +46,12 @@ class _SignInPageState extends State<SignInPage> {
         child: Column(
           children: [
             TextField(
+              autofillHints: [AutofillHints.email],
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
             ),
             TextField(
+              autofillHints: [AutofillHints.password],
               controller: _passwordController,
               decoration: const InputDecoration(labelText: 'Password'),
               obscureText: true,

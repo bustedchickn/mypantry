@@ -232,21 +232,28 @@ class _PantryPageState extends State<PantryPage> {
             ListTile(
               title: const Text('Pantry'),
               onTap: () {
-                Navigator.pushReplacementNamed(context, '/pantry');
+                Navigator.pushNamed(context, '/pantry');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Shopping List'),
+              onTap: (){
+                Navigator.pushNamed(context, '/shopping');
               },
             ),
 
             ListTile(
               title: const Text('Settings'),
               onTap: () {
-
+                Navigator.pushNamed(context, '/settings');
               },
             ),
 
             ListTile(
               title: const Text('Sign out'),
               onTap: () {
-
+                Navigator.pushNamed(context, '/sign_in');
               },
             ),
 
