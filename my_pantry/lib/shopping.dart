@@ -16,7 +16,8 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
   List<Map<String, dynamic>> shoppingLists = [];
   String? selectedListId;
   List<Map<String, dynamic>> items = [];
-  List<TextEditingController> controllers = [];
+  Map<String, TextEditingController> controllerMap = {};
+
 
   @override
   void initState() {
@@ -65,40 +66,57 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         .orderBy('order')
         .snapshots()
         .listen((snapshot) {
-          setState(() {
-            items =
-                snapshot.docs
-                    .map((doc) => {'id': doc.id, ...doc.data()})
-                    .toList();
-            controllers =
-                items
-                    .map((item) => TextEditingController(text: item['item']))
-                    .toList();
-          });
-        });
+      setState(() {
+        items = snapshot.docs
+            .map((doc) => {'id': doc.id, ...doc.data()})
+            .toList();
+
+        for (var item in items) {
+          final id = item['id'];
+          final existing = controllerMap[id];
+
+          if (existing == null) {
+            controllerMap[id] = TextEditingController(text: item['item']);
+          } else if (existing.text != item['item'] &&
+                    controllerMap[id]!.selection.isCollapsed) {
+            // Only update if not editing (cursor not active)
+            if (existing.text != item['item'] &&
+              existing.selection.baseOffset == existing.selection.extentOffset) {
+            final oldSelection = existing.selection;
+            existing.text = item['item'];
+            existing.selection = oldSelection;
+          }
+
+          }
+        }
+
+        // Clean up unused controllers
+        controllerMap.removeWhere((id, _) => !items.any((item) => item['id'] == id));
+      });
+    });
   }
 
   Future<void> reorderItems(int oldIndex, int newIndex) async {
     if (newIndex > oldIndex) newIndex -= 1;
 
-    final item = items.removeAt(oldIndex);
-    final controller = controllers.removeAt(oldIndex);
-    items.insert(newIndex, item);
-    controllers.insert(newIndex, controller);
+    final item = items[oldIndex];
 
-    // Update order field in Firestore
+    // Temporarily reorder the list to compute new orders
+    final reordered = [...items];
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
     final batch = _firestore.batch();
-    for (int i = 0; i < items.length; i++) {
+    for (int i = 0; i < reordered.length; i++) {
       final docRef = _firestore
           .collection('shoppingLists')
           .doc(selectedListId)
           .collection('items')
-          .doc(items[i]['id']);
+          .doc(reordered[i]['id']);
       batch.update(docRef, {'order': i});
     }
 
     await batch.commit();
-    setState(() {});
   }
 
   Future<void> addItemToList(String listId, String itemName) async {
@@ -141,33 +159,39 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
     });
   }
 
-  Future<void> removeItem(String listId, int index) async {
-    final id = items[index]['id'];
+  Future<void> removeItemById(String listId, String itemId) async {
     await _firestore
         .collection('shoppingLists')
         .doc(listId)
         .collection('items')
-        .doc(id)
+        .doc(itemId)
         .delete();
+
     setState(() {
+    final index = items.indexWhere((item) => item['id'] == itemId);
+    if (index != -1) {
       items.removeAt(index);
-      controllers.removeAt(index);
-    });
+      controllerMap.remove(itemId)?.dispose();
+    }
+  });
+
   }
 
   @override
   void dispose() {
     _ghostController.dispose();
     _ghostFocusNode.dispose();
-    for (final c in controllers) {
-      c.dispose();
+    for (final controller in controllerMap.values) {
+      controller.dispose();
     }
     super.dispose();
   }
 
+
   Widget buildItem(int index, {required Key key}) {
     final item = items[index];
-    final controller = controllers[index];
+    final controller = controllerMap[item['id']]!;
+
 
     return Dismissible(
       key: key,
@@ -179,8 +203,9 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         child: Icon(Icons.delete, color: Colors.white),
       ),
       onDismissed: (direction) {
-        if (selectedListId != null) removeItem(selectedListId!, index);
+        if (selectedListId != null) removeItemById(selectedListId!, item['id']);
       },
+
       child: ListTile(
         leading: Checkbox(
           value: item['checked'],
