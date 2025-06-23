@@ -4,7 +4,7 @@ import 'package:my_pantry/settings.dart';
 import 'firebase_options.dart';
 import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
-import 'package:my_pantry/welcome.dart';
+import 'package:my_pantry/ai_recipe.dart';
 import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
@@ -45,6 +45,7 @@ class MyPantryApp extends StatelessWidget {
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
         '/settings':(context) => const SettingsPage(),
+        '/ai':(context) => const RecipePage(),
       },
     );
   }
@@ -64,7 +65,7 @@ class AuthWrapper extends StatelessWidget {
         if (snapshot.hasData) {
           return const PantryPage(); // Signed in
         } else {
-          return const Welcome(); // Not signed in
+          return const SignInPage(); // Not signed in
         }
       },
     );
