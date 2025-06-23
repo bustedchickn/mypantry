@@ -245,14 +245,14 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             ListTile(
               title: const Text('Pantry'),
               onTap: () {
-                Navigator.pushNamed(context, '/pantry');
+                Navigator.pushReplacementNamed(context, '/pantry');
               },
             ),
 
             ListTile(
               title: const Text('Shopping List'),
               onTap: () {
-                Navigator.pushNamed(context, '/shopping');
+                Navigator.pushReplacementNamed(context, '/shopping');
               },
             ),
 
@@ -268,7 +268,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
             }),
 
             ListTile(title: const Text('Sign out'), onTap: () {
-              Navigator.pushNamed(context, '/sign_in');
+              Navigator.pushReplacementNamed(context, '/sign_in');
             }),
           ],
         ),
