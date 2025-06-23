@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -56,7 +57,7 @@ class SettingsPage extends StatelessWidget {
             leading: const Icon(Icons.person),
             title: const Text('Account'),
             onTap: () {
-              // Navigate to account settings
+              Navigator.pushNamed(context, '/account');
             },
           ),
           ListTile(
@@ -85,7 +86,10 @@ class SettingsPage extends StatelessWidget {
             leading: const Icon(Icons.logout),
             title: const Text('Logout'),
             onTap: () {
-              // Handle logout
+              FirebaseAuth.instance.signOut();
+                      Navigator.pushNamedAndRemoveUntil(
+                          context, '/sign_in', (route) => false);
+              
             },
           ),
         ],

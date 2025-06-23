@@ -8,7 +8,7 @@ import 'package:my_pantry/welcome.dart';
 import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
-
+import 'package:my_pantry/account.dart';
 
 
 void main() async {
@@ -45,6 +45,7 @@ class MyPantryApp extends StatelessWidget {
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
         '/settings':(context) => const SettingsPage(),
+        '/account': (context) => const AccountPage(),
       },
     );
   }

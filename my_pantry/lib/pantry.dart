@@ -22,17 +22,15 @@ class _PantryPageState extends State<PantryPage> {
   void initState() {
     super.initState();
     fetchPantrys();
-    print('Fetching pantries on initState'); // Debugging log
   }
 
   Future<void> createPantry(String name, List<String> userIds) async {
     try {
-      print('Creating pantry with name: $name'); // Debugging log
       await _firestore.collection('Pantrys').add({
         'name': name,
         'sharedWith': userIds,
       });
-      print('Pantry created successfully'); // Debugging log
+      
       fetchPantrys();
     } catch (e) {
       print('Error creating pantry: $e'); // Debugging log
@@ -243,7 +241,7 @@ class _PantryPageState extends State<PantryPage> {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Shopping Lists'),
+      appBar: AppBar(title: const Text('Pantries'),
       ),
       // this is the drawer next to the appbar
       endDrawer: Drawer(
