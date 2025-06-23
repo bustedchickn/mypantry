@@ -241,7 +241,7 @@ class _PantryPageState extends State<PantryPage> {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Pantries'),
+      appBar: AppBar(title: const Text('Pantry'),
       ),
       // this is the drawer next to the appbar
       endDrawer: Drawer(
@@ -264,6 +264,13 @@ class _PantryPageState extends State<PantryPage> {
               title: const Text('Shopping List'),
               onTap: (){
                 Navigator.pushNamed(context, '/shopping');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Recipe'),
+              onTap: (){
+                Navigator.pushNamed(context, '/ai');
               },
             ),
 

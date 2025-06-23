@@ -38,6 +38,13 @@ class SettingsPage extends StatelessWidget {
               },
             ),
 
+            ListTile(
+              title: const Text('Recipe'),
+              onTap: () {
+                Navigator.pushNamed(context, '/ai');
+              },
+            ),
+
             ListTile(title: const Text('Settings'), onTap: () {
               Navigator.pushNamed(context, '/settings');
             }),
