@@ -11,7 +11,7 @@ class SignInPage extends StatefulWidget {
 class _SignInPageState extends State<SignInPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
-
+  bool _obscurePassword = true;
   Future<void> _signIn() async {
     try {
       await FirebaseAuth.instance.signInWithEmailAndPassword(
@@ -53,8 +53,20 @@ class _SignInPageState extends State<SignInPage> {
             TextField(
               autofillHints: [AutofillHints.password],
               controller: _passwordController,
-              decoration: const InputDecoration(labelText: 'Password'),
-              obscureText: true,
+              obscureText: _obscurePassword,
+              decoration: InputDecoration(
+                labelText: 'Password',
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _obscurePassword = !_obscurePassword;
+                    });
+                  },
+                ),
+              ),
             ),
             const SizedBox(height: 20),
             ElevatedButton(onPressed: _signIn, child: const Text("Sign In")),
