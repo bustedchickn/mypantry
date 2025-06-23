@@ -42,4 +42,6 @@
             <data android:mimeType="text/plain"/>
         </intent>
     </queries>
+    <!-- This gives access to make request over internet -->
+    <uses-permission android:name="android.permission.INTERNET"/>
 </manifest>
