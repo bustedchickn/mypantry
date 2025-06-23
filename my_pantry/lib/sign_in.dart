@@ -69,7 +69,10 @@ class _SignInPageState extends State<SignInPage> {
               ),
             ),
             const SizedBox(height: 20),
-            ElevatedButton(onPressed: _signIn, child: const Text("Sign In")),
+            ElevatedButton(
+              onPressed: () {Navigator.pushReplacementNamed(context, '/shopping');
+              },
+              child: const Text("Sign In")),
             TextButton(
               onPressed: () {
                 Navigator.pushNamed(context, '/sign_up');
