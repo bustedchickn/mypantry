@@ -23,23 +23,29 @@ class _SignUpPageState extends State<SignUpPage> {
               email: _emailController.text.trim(),
               password: _passwordController.text.trim());
 
-      final uid = userCred.user!.uid;
+      final user = userCred.user;
+      final uid = user!.uid;
 
-      // Create user document in Firestore
+      // ✅ Update the display name in FirebaseAuth
+      await user.updateDisplayName(_nameController.text.trim());
+      await user.reload(); // Refresh local user instance
+
+      // ✅ Create user document in Firestore
       await FirebaseFirestore.instance.collection('users').doc(uid).set({
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
       });
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Sign up successful!')),
       );
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const PantryPage()),
       );
-      // Optionally, navigate to a home screen
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${e.toString()}')),

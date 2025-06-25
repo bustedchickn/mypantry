@@ -67,25 +67,29 @@ class SettingsPage extends StatelessWidget {
               Navigator.pushNamed(context, '/account');
             },
           ),
-          ListTile(
+          /*ListTile(
             leading: const Icon(Icons.notifications),
             title: const Text('Notifications'),
             onTap: () {
               // Navigate to notification settings
             },
-          ),
+          ),*/
           ListTile(
             leading: const Icon(Icons.palette),
             title: const Text('Appearance'),
             onTap: () {
-              // Navigate to appearance settings
+              ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Appearance functionality coming soon.')),
+                      );
             },
           ),
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('About'),
             onTap: () {
-              // Navigate to about page
+              ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('About functionality coming soon.')),
+                      );
             },
           ),
           const Divider(),

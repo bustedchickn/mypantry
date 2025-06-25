@@ -159,6 +159,121 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
     });
   }
 
+  Future<void> moveCheckedItemsToPantry() async {
+    final userId = FirebaseAuth.instance.currentUser!.uid;
+
+    // Fetch all pantries shared with this user
+    final pantrySnapshot = await _firestore
+        .collection('Pantrys')
+        .where('sharedWith', arrayContains: userId)
+        .get();
+
+    final pantryDocs = pantrySnapshot.docs;
+    if (pantryDocs.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("No pantries found.")),
+      );
+      return;
+    }
+
+    String? selectedPantryId;
+
+    // Prompt the user to pick a pantry
+    await showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: const Text("Select Pantry"),
+            content: DropdownButton<String>(
+              isExpanded: true,
+              value: selectedPantryId,
+              hint: const Text("Choose a pantry"),
+              items: pantryDocs.map((doc) {
+                return DropdownMenuItem<String>(
+                  value: doc.id,
+                  child: Text(doc['name'] ?? 'Unnamed Pantry'),
+                );
+              }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  selectedPantryId = value;
+                });
+              },
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: const Text("Cancel"),
+              ),
+              ElevatedButton(
+                onPressed: selectedPantryId != null
+                    ? () => Navigator.of(context).pop()
+                    : null,
+                child: const Text("Move Items"),
+              ),
+            ],
+          );
+        });
+      },
+    );
+
+    if (selectedPantryId == null) return;
+
+    final batch = _firestore.batch();
+    final checkedItems = items.where((item) => item['checked'] == true).toList();
+
+      // 1. Get max order in pantry items first
+  final pantryItemsSnapshot = await _firestore
+      .collection('Pantrys')  // Note: spelling matches your collection
+      .doc(selectedPantryId)
+      .collection('items')
+      .orderBy('order', descending: true)
+      .limit(1)
+      .get();
+
+  int maxOrder = 0;
+  if (pantryItemsSnapshot.docs.isNotEmpty) {
+    maxOrder = pantryItemsSnapshot.docs.first.data()['order'] ?? 0;
+  }
+
+  int orderCounter = maxOrder + 1;
+
+  for (var item in checkedItems) {
+    final pantryItemRef = _firestore
+        .collection('Pantrys')
+        .doc(selectedPantryId)
+        .collection('items')
+        .doc();
+
+    batch.set(pantryItemRef, {
+      'item': item['item'],
+      'checked': false,
+      'order': orderCounter,
+    });
+
+    orderCounter++;  // increment for next item
+
+    final shoppingItemRef = _firestore
+        .collection('shoppingLists')
+        .doc(selectedListId)
+        .collection('items')
+        .doc(item['id']);
+    batch.delete(shoppingItemRef);
+  }
+
+  await batch.commit();
+
+
+    
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Moved ${checkedItems.length} item(s) to pantry.")),
+    );
+  }
+
+
+
   Future<void> removeItemById(String listId, String itemId) async {
     await _firestore
         .collection('shoppingLists')
@@ -395,7 +510,20 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 },
                 child: Text('Share This List'),
               ),
+              
+              
             ),
+            if (selectedListId != null)
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: ElevatedButton.icon(
+                  onPressed: moveCheckedItemsToPantry,
+                  icon: const Icon(Icons.move_to_inbox),
+                  label: const Text('Move Checked to Pantry'),
+                ),
+              ),
+
+            
           Divider(),
           // Items
           if (selectedListId != null)
