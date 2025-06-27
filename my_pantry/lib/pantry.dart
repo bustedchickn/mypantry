@@ -30,7 +30,7 @@ class _PantryPageState extends State<PantryPage> {
         'name': name,
         'sharedWith': userIds,
       });
-      
+
       fetchPantrys();
     } catch (e) {
       print('Error creating pantry: $e'); // Debugging log
@@ -49,14 +49,14 @@ class _PantryPageState extends State<PantryPage> {
     try {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       print('Fetching pantries for user: $userId'); // Debugging log
-      final snapshot = await _firestore
-          .collection('Pantrys')
-          .where('sharedWith', arrayContains: userId)
-          .get();
+      final snapshot =
+          await _firestore
+              .collection('Pantrys')
+              .where('sharedWith', arrayContains: userId)
+              .get();
       setState(() {
-        Pantrys = snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList();
+        Pantrys =
+            snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
         print('Fetched pantries: $Pantrys'); // Debugging log
         if (Pantrys.isNotEmpty && selectedListId == null) {
           selectedListId = Pantrys.first['id'];
@@ -76,34 +76,37 @@ class _PantryPageState extends State<PantryPage> {
         .orderBy('order')
         .snapshots()
         .listen((snapshot) {
-      setState(() {
-        items = snapshot.docs
-            .map((doc) => {'id': doc.id, ...doc.data()})
-            .toList();
+          setState(() {
+            items =
+                snapshot.docs
+                    .map((doc) => {'id': doc.id, ...doc.data()})
+                    .toList();
 
-        for (var item in items) {
-          final id = item['id'];
-          final existing = controllerMap[id];
+            for (var item in items) {
+              final id = item['id'];
+              final existing = controllerMap[id];
 
-          if (existing == null) {
-            controllerMap[id] = TextEditingController(text: item['item']);
-          } else if (existing.text != item['item'] &&
-                    controllerMap[id]!.selection.isCollapsed) {
-            // Only update if not editing (cursor not active)
-            if (existing.text != item['item'] &&
-              existing.selection.baseOffset == existing.selection.extentOffset) {
-            final oldSelection = existing.selection;
-            existing.text = item['item'];
-            existing.selection = oldSelection;
-          }
+              if (existing == null) {
+                controllerMap[id] = TextEditingController(text: item['item']);
+              } else if (existing.text != item['item'] &&
+                  controllerMap[id]!.selection.isCollapsed) {
+                // Only update if not editing (cursor not active)
+                if (existing.text != item['item'] &&
+                    existing.selection.baseOffset ==
+                        existing.selection.extentOffset) {
+                  final oldSelection = existing.selection;
+                  existing.text = item['item'];
+                  existing.selection = oldSelection;
+                }
+              }
+            }
 
-          }
-        }
-
-        // Clean up unused controllers
-        controllerMap.removeWhere((id, _) => !items.any((item) => item['id'] == id));
-      });
-    });
+            // Clean up unused controllers
+            controllerMap.removeWhere(
+              (id, _) => !items.any((item) => item['id'] == id),
+            );
+          });
+        });
   }
 
   Future<void> reorderItems(int oldIndex, int newIndex) async {
@@ -129,21 +132,14 @@ class _PantryPageState extends State<PantryPage> {
     await batch.commit();
   }
 
-
-
   Future<void> addItemToList(String listId, String itemName) async {
-  await _firestore
-      .collection('Pantrys')
-      .doc(listId)
-      .collection('items')
-      .add({
-    'item': itemName,
-    'checked': false,
-    'order': items.length, // add to the end
-  });
-  listenToItems(listId);
+    await _firestore.collection('Pantrys').doc(listId).collection('items').add({
+      'item': itemName,
+      'checked': false,
+      'order': items.length, // add to the end
+    });
+    listenToItems(listId);
   }
-
 
   Future<void> updateItem(String listId, int index, String newText) async {
     final id = items[index]['id'];
@@ -185,11 +181,39 @@ class _PantryPageState extends State<PantryPage> {
       if (index != -1) {
         items.removeAt(index);
         controllerMap.remove(itemId)?.dispose();
-
       }
     });
   }
 
+  // adding delete function
+  Future<void> removePantry(String pantryId) async {
+    try {
+      // Delete all subcollection items first
+      final itemsSnapshot =
+          await _firestore
+              .collection('Pantrys')
+              .doc(pantryId)
+              .collection('items')
+              .get();
+
+      for (var doc in itemsSnapshot.docs) {
+        await doc.reference.delete();
+      }
+
+      // Delete the pantry itself
+      await _firestore.collection('Pantrys').doc(pantryId).delete();
+
+      // If the deleted pantry was selected, reset selection
+      if (selectedListId == pantryId) {
+        selectedListId = null;
+        items.clear();
+      }
+
+      fetchPantrys(); // Refresh pantry list
+    } catch (e) {
+      print('Error deleting pantry: $e');
+    }
+  }
 
   @override
   void dispose() {
@@ -229,7 +253,8 @@ class _PantryPageState extends State<PantryPage> {
           controller: controller,
           decoration: InputDecoration(border: InputBorder.none),
           onChanged: (value) {
-            if (selectedListId != null) updateItem(selectedListId!, index, value);
+            if (selectedListId != null)
+              updateItem(selectedListId!, index, value);
           },
         ),
         trailing: Icon(Icons.drag_handle),
@@ -241,8 +266,7 @@ class _PantryPageState extends State<PantryPage> {
   Widget build(BuildContext context) {
     final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
-      appBar: AppBar(title: const Text('Pantry'),
-      ),
+      appBar: AppBar(title: const Text('Pantry')),
       // this is the drawer next to the appbar
       endDrawer: Drawer(
         child: ListView(
@@ -262,14 +286,14 @@ class _PantryPageState extends State<PantryPage> {
 
             ListTile(
               title: const Text('Shopping List'),
-              onTap: (){
+              onTap: () {
                 Navigator.pushNamed(context, '/shopping');
               },
             ),
 
             ListTile(
               title: const Text('Recipe'),
-              onTap: (){
+              onTap: () {
                 Navigator.pushNamed(context, '/ai');
               },
             ),
@@ -287,9 +311,8 @@ class _PantryPageState extends State<PantryPage> {
                 Navigator.pushNamed(context, '/sign_in');
               },
             ),
-
           ],
-        )
+        ),
       ),
 
       // body
@@ -299,21 +322,61 @@ class _PantryPageState extends State<PantryPage> {
           if (Pantrys.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: DropdownButton<String>(
-                value: selectedListId,
-                hint: Text('Select a pantry'),
-                items: Pantrys.map((list) {
-                  return DropdownMenuItem<String>(
-                    value: list['id'],
-                    child: Text(list['name'] ?? 'Unnamed List'),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedListId = value;
-                  });
-                  if (value != null) listenToItems(value);
-                },
+              child: Row(
+                children: [
+                  Expanded(
+                    child: DropdownButton<String>(
+                      value: selectedListId,
+                      hint: Text('Select a pantry'),
+                      items:
+                          Pantrys.map((list) {
+                            return DropdownMenuItem<String>(
+                              value: list['id'],
+                              child: Text(list['name'] ?? 'Unnamed List'),
+                            );
+                          }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedListId = value;
+                        });
+                        if (value != null) listenToItems(value);
+                      },
+                    ),
+                  ),
+                  if (selectedListId != null)
+                    IconButton(
+                      icon: Icon(Icons.delete, color: Colors.red),
+                      tooltip: 'Delete Pantry',
+                      onPressed: () async {
+                        final confirm = await showDialog<bool>(
+                          context: context,
+                          builder:
+                              (context) => AlertDialog(
+                                title: Text('Delete Pantry'),
+                                content: Text(
+                                  'Are you sure you want to delete this pantry?',
+                                ),
+                                actions: [
+                                  TextButton(
+                                    child: Text('Cancel'),
+                                    onPressed:
+                                        () => Navigator.pop(context, false),
+                                  ),
+                                  TextButton(
+                                    child: Text('Delete'),
+                                    onPressed:
+                                        () => Navigator.pop(context, true),
+                                  ),
+                                ],
+                              ),
+                        );
+
+                        if (confirm == true) {
+                          await removePantry(selectedListId!);
+                        }
+                      },
+                    ),
+                ],
               ),
             ),
           // Create new list
@@ -324,30 +387,31 @@ class _PantryPageState extends State<PantryPage> {
                 final controller = TextEditingController();
                 await showDialog(
                   context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text('Create Pantry'),
-                    content: TextField(
-                      controller: controller,
-                      decoration: InputDecoration(hintText: 'Pantry name'),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        child: Text('Cancel'),
+                  builder:
+                      (context) => AlertDialog(
+                        title: Text('Create Pantry'),
+                        content: TextField(
+                          controller: controller,
+                          decoration: InputDecoration(hintText: 'Pantry name'),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.pop(context);
+                            },
+                            child: Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              if (controller.text.trim().isNotEmpty) {
+                                createPantry(controller.text.trim(), [userId]);
+                                Navigator.pop(context);
+                              }
+                            },
+                            child: Text('Create'),
+                          ),
+                        ],
                       ),
-                      TextButton(
-                        onPressed: () {
-                          if (controller.text.trim().isNotEmpty) {
-                            createPantry(controller.text.trim(), [userId]);
-                            Navigator.pop(context);
-                          }
-                        },
-                        child: Text('Create'),
-                      ),
-                    ],
-                  ),
                 );
               },
               child: Text('Create New Pantry'),
@@ -362,40 +426,49 @@ class _PantryPageState extends State<PantryPage> {
                   final controller = TextEditingController();
                   await showDialog(
                     context: context,
-                    builder: (context) => AlertDialog(
-                      title: Text('Share Pantry'),
-                      content: TextField(
-                        controller: controller,
-                        decoration: InputDecoration(hintText: 'User UID to share with'),
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
-                          child: Text('Cancel'),
-                        ),
-                        TextButton(
-                          onPressed: () async {
-                            final uid = controller.text.trim();
-                            if (uid.isNotEmpty) {
-                              try {
-                                await addUserToList(selectedListId!, uid);
+                    builder:
+                        (context) => AlertDialog(
+                          title: Text('Share Pantry'),
+                          content: TextField(
+                            controller: controller,
+                            decoration: InputDecoration(
+                              hintText: 'User UID to share with',
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
                                 Navigator.pop(context);
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('List shared with UID $uid')),
-                                );
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error sharing: $e')),
-                                );
-                              }
-                            }
-                          },
-                          child: Text('Share'),
+                              },
+                              child: Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () async {
+                                final uid = controller.text.trim();
+                                if (uid.isNotEmpty) {
+                                  try {
+                                    await addUserToList(selectedListId!, uid);
+                                    Navigator.pop(context);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'List shared with UID $uid',
+                                        ),
+                                      ),
+                                    );
+                                  } catch (e) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text('Error sharing: $e'),
+                                      ),
+                                    );
+                                  }
+                                }
+                              },
+                              child: Text('Share'),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
                   );
                 },
                 child: Text('Share This Pantry'),
@@ -406,10 +479,11 @@ class _PantryPageState extends State<PantryPage> {
           if (selectedListId != null)
             Expanded(
               child: ReorderableListView(
-                onReorder: (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
+                onReorder:
+                    (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
                 children: [
                   for (int index = 0; index < items.length; index++)
-                    buildItem(index, key: ValueKey(items[index]['id']))
+                    buildItem(index, key: ValueKey(items[index]['id'])),
                 ],
               ),
             ),
@@ -433,8 +507,7 @@ class _PantryPageState extends State<PantryPage> {
               ),
             ),
 
-            // this is the Bottom Navigation bar
-            
+          // this is the Bottom Navigation bar
         ],
       ),
     );
