@@ -9,6 +9,7 @@ import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
 import 'package:my_pantry/account.dart';
+import 'package:my_pantry/qrcode.dart';
 
 
 void main() async {
@@ -47,6 +48,7 @@ class MyPantryApp extends StatelessWidget {
         '/settings':(context) => const SettingsPage(),
         '/account': (context) => const AccountPage(),
         '/ai':(context) => const RecipeListScreen(),
+        '/qr':(context) => const QRScannerPage(),
       },
     );
   }

@@ -35,7 +35,11 @@ class _SignUpPageState extends State<SignUpPage> {
         'name': _nameController.text.trim(),
         'email': _emailController.text.trim(),
         'createdAt': FieldValue.serverTimestamp(),
-      });
+        'friends': [], // List of user IDs
+        'pantrySharingWith': [], // List of user IDs they share their pantry with
+        'friendCode': uid.substring(0, 6), // Or generate a unique short code
+      }); 
+
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
