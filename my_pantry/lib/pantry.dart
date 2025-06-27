@@ -8,10 +8,13 @@ class PantryPage extends StatefulWidget {
   State<PantryPage> createState() => _PantryPageState();
 }
 
-class _PantryPageState extends State<PantryPage> {
+class _PantryPageState extends State<PantryPage>
+    with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _ghostController = TextEditingController();
   final FocusNode _ghostFocusNode = FocusNode();
+  late AnimationController _rotationController;
+  late Animation<double> _rotationAnimation;
 
   List<Map<String, dynamic>> Pantrys = [];
   String? selectedListId;
@@ -22,6 +25,28 @@ class _PantryPageState extends State<PantryPage> {
   void initState() {
     super.initState();
     fetchPantrys();
+
+    _rotationController = AnimationController(
+      duration: const Duration(milliseconds: 2000),
+      vsync: this,
+    );
+
+    _rotationAnimation = TweenSequence([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
+      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 1),
+    ]).animate(
+      CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut),
+    );
   }
 
   Future<void> createPantry(String name, List<String> userIds) async {
@@ -223,6 +248,9 @@ class _PantryPageState extends State<PantryPage> {
       controller.dispose();
     }
     super.dispose();
+
+    _rotationController
+        .dispose(); // for removing the animation of the  trash can
   }
 
   Widget buildItem(int index, {required Key key}) {
@@ -344,37 +372,48 @@ class _PantryPageState extends State<PantryPage> {
                     ),
                   ),
                   if (selectedListId != null)
-                    IconButton(
-                      icon: Icon(Icons.delete, color: Colors.red),
-                      tooltip: 'Delete Pantry',
-                      onPressed: () async {
-                        final confirm = await showDialog<bool>(
-                          context: context,
-                          builder:
-                              (context) => AlertDialog(
-                                title: Text('Delete Pantry'),
-                                content: Text(
-                                  'Are you sure you want to delete this pantry?',
-                                ),
-                                actions: [
-                                  TextButton(
-                                    child: Text('Cancel'),
-                                    onPressed:
-                                        () => Navigator.pop(context, false),
-                                  ),
-                                  TextButton(
-                                    child: Text('Delete'),
-                                    onPressed:
-                                        () => Navigator.pop(context, true),
-                                  ),
-                                ],
-                              ),
+                    AnimatedBuilder(
+                      animation: _rotationController,
+                      builder: (context, child) {
+                        return Transform.rotate(
+                          angle: _rotationAnimation.value,
+                          child: child,
                         );
-
-                        if (confirm == true) {
-                          await removePantry(selectedListId!);
-                        }
                       },
+                      child: IconButton(
+                        icon: Icon(Icons.delete, color: Colors.red),
+                        tooltip: 'Delete Pantry',
+                        onPressed: () async {
+                          _rotationController.forward(from: 0); // Start wiggle
+
+                          final confirm = await showDialog<bool>(
+                            context: context,
+                            builder:
+                                (context) => AlertDialog(
+                                  title: Text('Delete Pantry'),
+                                  content: Text(
+                                    'Are you sure you want to delete this pantry?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('Cancel'),
+                                      onPressed:
+                                          () => Navigator.pop(context, false),
+                                    ),
+                                    TextButton(
+                                      child: Text('Delete'),
+                                      onPressed:
+                                          () => Navigator.pop(context, true),
+                                    ),
+                                  ],
+                                ),
+                          );
+
+                          if (confirm == true && selectedListId != null) {
+                            await removePantry(selectedListId!);
+                          }
+                        },
+                      ),
                     ),
                 ],
               ),
