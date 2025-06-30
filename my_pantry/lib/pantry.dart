@@ -27,19 +27,11 @@ class _PantryPageState extends State<PantryPage>
     fetchPantrys();
 
     _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 2000),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
     _rotationAnimation = TweenSequence([
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
-      TweenSequenceItem(tween: Tween(begin: 0.1, end: 0.0), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 0.0, end: 0.1), weight: 1),
       TweenSequenceItem(tween: Tween(begin: 0.1, end: -0.1), weight: 1),
       TweenSequenceItem(tween: Tween(begin: -0.1, end: 0.1), weight: 1),
@@ -207,6 +199,12 @@ class _PantryPageState extends State<PantryPage>
         items.removeAt(index);
         controllerMap.remove(itemId)?.dispose();
       }
+    });
+
+    // wiggle animation
+    _rotationController.repeat(period: const Duration(milliseconds: 600));
+    Future.delayed(const Duration(seconds: 1),(){
+      _rotationController.stop();
     });
   }
 
