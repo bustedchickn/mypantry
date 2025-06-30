@@ -22,6 +22,48 @@ class AccountPage extends StatelessWidget {
   }
   return null;
 }
+  Future<void> sendFriendRequest(BuildContext context, String friendCode) async {
+  final myId = FirebaseAuth.instance.currentUser!.uid;
+
+  if (friendCode.trim().isEmpty) return;
+
+  final result = await FirebaseFirestore.instance
+      .collection('users')
+      .where('friendCode', isEqualTo: friendCode.trim())
+      .limit(1)
+      .get();
+
+  if (result.docs.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("Friend code not found.")),
+    );
+    return;
+  }
+
+  final friendId = result.docs.first.id;
+  if (friendId == myId) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text("You can't friend yourself.")),
+    );
+    return;
+  }
+
+  // Write friend request
+  final requestRef = FirebaseFirestore.instance
+      .collection('users')
+      .doc(friendId)
+      .collection('friendRequests')
+      .doc(myId);
+
+  await requestRef.set({
+    'from': myId,
+    'timestamp': FieldValue.serverTimestamp(),
+  });
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text("Friend request sent!")),
+  );
+}
 
 
   void _showChangeEmailDialog(BuildContext context) {
@@ -75,7 +117,7 @@ class AccountPage extends StatelessWidget {
                   await user.reauthenticateWithCredential(cred);
 
                   // Update email
-                  await user.updateEmail(newEmail);
+                  await user.verifyBeforeUpdateEmail(newEmail);
 
                   // Optional: update in Firestore
                   await FirebaseFirestore.instance
@@ -194,51 +236,25 @@ class AccountPage extends StatelessWidget {
                         
                         const SizedBox(height: 10),
                         ElevatedButton(
-  onPressed: () async {
-    final scannedCode = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => const QRScannerPage()),
-    );
+                          onPressed: () async {
+                            final scannedCode = await Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => const QRScannerPage()),
+                            );
 
-    if (scannedCode != null && scannedCode is String) {
-      final myId = FirebaseAuth.instance.currentUser!.uid;
-
-      final result = await FirebaseFirestore.instance
-          .collection('users')
-          .where('friendCode', isEqualTo: scannedCode.trim())
-          .limit(1)
-          .get();
-
-      if (result.docs.isNotEmpty) {
-        final friendId = result.docs.first.id;
-
-        // Add each other as friends
-        await FirebaseFirestore.instance.collection('users').doc(myId).update({
-          'friends': FieldValue.arrayUnion([friendId]),
-        });
-        await FirebaseFirestore.instance.collection('users').doc(friendId).update({
-          'friends': FieldValue.arrayUnion([myId]),
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Friend added via QR!")),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Invalid QR code.")),
-        );
-      }
-    }
-  },
-  child: const Text("Scan Friend's QR Code"),
-),
+                            if (scannedCode != null && scannedCode is String) {
+                              await sendFriendRequest(context, scannedCode);
+                            }
+                          },
+                          child: const Text("Scan Friend's QR Code"),
+                        ),
 
                         ElevatedButton(
                           onPressed: () {
+                            final controller = TextEditingController();
                             showDialog(
                               context: context,
                               builder: (context) {
-                                final controller = TextEditingController();
                                 return AlertDialog(
                                   title: const Text('Enter Friend Code'),
                                   content: TextField(
@@ -246,39 +262,15 @@ class AccountPage extends StatelessWidget {
                                     decoration: const InputDecoration(labelText: 'Friend Code'),
                                   ),
                                   actions: [
-                                    TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+                                    TextButton(
+                                      onPressed: () => Navigator.pop(context),
+                                      child: const Text('Cancel'),
+                                    ),
                                     ElevatedButton(
                                       onPressed: () async {
                                         final inputCode = controller.text.trim();
-                                        final myId = FirebaseAuth.instance.currentUser!.uid;
-
-                                        final result = await FirebaseFirestore.instance
-                                            .collection('users')
-                                            .where('friendCode', isEqualTo: inputCode)
-                                            .limit(1)
-                                            .get();
-
-                                        if (result.docs.isNotEmpty) {
-                                          final friendId = result.docs.first.id;
-
-                                          // Add each other as friends
-                                          await FirebaseFirestore.instance.collection('users').doc(myId).update({
-                                            'friends': FieldValue.arrayUnion([friendId]),
-                                          });
-                                          await FirebaseFirestore.instance.collection('users').doc(friendId).update({
-                                            'friends': FieldValue.arrayUnion([myId]),
-                                          });
-
-                                          Navigator.pop(context);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Friend added!")),
-                                          );
-                                        } else {
-                                          Navigator.pop(context);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Friend code not found.")),
-                                          );
-                                        }
+                                        Navigator.pop(context); // Close the dialog before adding
+                                        await sendFriendRequest(context, inputCode);
                                       },
                                       child: const Text("Add Friend"),
                                     ),
@@ -287,8 +279,9 @@ class AccountPage extends StatelessWidget {
                               },
                             );
                           },
-                          child: const Text("Add Friend"),
+                          child: const Text("Add Friend Manually"),
                         ),
+
                       ],
                     );
                   },

@@ -377,6 +377,12 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
                 Navigator.pushNamed(context, '/ai');
               },
             ),
+            ListTile(
+              title: const Text('Friends'),
+              onTap: () {
+                Navigator.pushNamed(context, '/friends');
+              },
+            ),
 
             ListTile(title: const Text('Settings'), onTap: () {
               Navigator.pushNamed(context, '/settings');

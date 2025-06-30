@@ -10,6 +10,7 @@ import 'package:my_pantry/sign_in.dart';
 import 'package:my_pantry/sign_up.dart';
 import 'package:my_pantry/account.dart';
 import 'package:my_pantry/qrcode.dart';
+import 'package:my_pantry/friend.dart';
 
 
 void main() async {
@@ -41,6 +42,7 @@ class MyPantryApp extends StatelessWidget {
       // on the Welcome page.
       home: const AuthWrapper(),
       routes: {
+        '/friends': (context) => const FriendsPage(),
         '/sign_in': (context) => const SignInPage(),
         '/sign_up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),
