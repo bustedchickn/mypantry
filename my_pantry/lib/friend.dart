@@ -125,6 +125,54 @@ class _FriendsPageState extends State<FriendsPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Friends & Requests')),
+      // nav drawer
+      endDrawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            const DrawerHeader(
+              decoration: BoxDecoration(color: Colors.yellow),
+              child: Text('Drawer Header'),
+            ),
+
+            ListTile(
+              title: const Text('Pantry'),
+              onTap: () {
+                Navigator.pushNamed(context, '/pantry');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Shopping List'),
+              onTap: () {
+                Navigator.pushNamed(context, '/shopping');
+              },
+            ),
+
+            ListTile(
+              title: const Text('Recipe'),
+              onTap: () {
+                Navigator.pushNamed(context, '/ai');
+              },
+            ),
+            ListTile(
+              title: const Text('Friends'),
+              onTap: () {
+                Navigator.pushNamed(context, '/friends');
+              },
+            ),
+
+            ListTile(title: const Text('Settings'), onTap: () {
+              Navigator.pushNamed(context, '/settings');
+            }),
+
+            ListTile(title: const Text('Sign out'), onTap: () {
+              Navigator.pushNamed(context, '/sign_in');
+            }),
+          ],
+        ),
+      ),
+
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
