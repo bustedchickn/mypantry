@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../Models/recipe_model.dart';
 import '../utils/recipe_parser.dart';
 import '../widgets/recipe_card.dart';
-import '../utils/api_service.dart'; // Import your API service if needed
+import '../utils/api_service.dart';
 
 class RecipeListScreen extends StatefulWidget {
   const RecipeListScreen({super.key});
@@ -16,10 +16,20 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
   bool _isLoading = true;
   String? _errorMessage;
   final ApiService _apiService = ApiService();
+  late List<String> _ingredients;
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Extract ingredients from navigation arguments
+    final args = ModalRoute.of(context)!.settings.arguments;
+    if (args is List<String>) {
+      _ingredients = args;
+    } else {
+      _ingredients = [];
+    }
+
     _loadRecipes();
   }
 
@@ -28,33 +38,11 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
       _isLoading = true;
       _errorMessage = null;
     });
-    
+
     try {
-      // Define the ingredients list to test
-      final List<String> ingredients = [
-        '2 pounds ground turkey, chicken or beef',
-        '1½ pounds boneless chicken',
-        '1 dozen eggs',
-        '1 pack shredded cheddar or Mexican blend cheese',
-        '1 package mixed salad greens of your choice',
-        '1 package fresh or frozen vegetables of your choice',
-        '1 box whole grain pasta',
-        '1 jar marinara/pasta sauce',
-        '1 box instant brown rice',
-        '2 cans beans of your choice',
-        '1 pack chili seasoning',
-        '1 15-ounce can diced tomatoes or tomato sauce',
-        '1 bottle soy sauce or teriyaki sauce',
-        '1 jar salsa spice/herb blend of your choice',
-        'Salad dressing of your choice'
-      ];
-      
-      // Use the ApiService to fetch recipes
-      final jsonResponse = await _apiService.fetchRecipesFromOllama(ingredients);
-      
-      // Parse the JSON response using the new parser
+      final jsonResponse = await _apiService.fetchRecipesFromOllama(_ingredients);
       final parsedRecipes = RecipeParser.parseRecipesFromJson(jsonResponse);
-      
+
       setState(() {
         _recipes = parsedRecipes;
         _isLoading = false;
@@ -62,7 +50,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
 
       if (parsedRecipes.isEmpty) {
         setState(() {
-          _errorMessage = "No recipes found in the API response.";
+          _errorMessage = "No recipes found.";
         });
       }
     } catch (e) {
@@ -84,7 +72,8 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
             onPressed: _loadRecipes,
           ),
         ],
-      )
+      ),
+      body: _buildBody(),
     );
   }
 

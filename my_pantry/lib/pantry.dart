@@ -203,7 +203,7 @@ class _PantryPageState extends State<PantryPage>
 
     // wiggle animation
     _rotationController.repeat(period: const Duration(milliseconds: 600));
-    Future.delayed(const Duration(seconds: 1),(){
+    Future.delayed(const Duration(seconds: 1), () {
       _rotationController.stop();
     });
   }
@@ -547,6 +547,26 @@ class _PantryPageState extends State<PantryPage>
                   }
                   FocusScope.of(context).requestFocus(_ghostFocusNode);
                 },
+              ),
+            ),
+          if (selectedListId != null)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  final selectedIngredients =
+                      items
+                          .where((item) => item['checked'] == true)
+                          .map<String>((item) => item['item'].toString())
+                          .toList();
+
+                  Navigator.pushNamed(
+                    context,
+                    '/ai', // or whatever route you want
+                    arguments: selectedIngredients,
+                  );
+                },
+                child: Text('Send Selected Ingredients'),
               ),
             ),
 

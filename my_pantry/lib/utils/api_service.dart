@@ -9,7 +9,7 @@ class ApiService {
     // Prepare the request body based on Ollama's API requirements
     final requestBody = {
       "model": "llama3.2",
-      "prompt": "Suppose that you are a terrific chef. Create a menu for one week and be cooked or preprared bellow 30 min with the following ingridients please specified the prep time in minutes like 15 min, 20 min, etc, the cooking time will be also in minutes like 5min, 15min, etc, and the ingredient amount for every recipe:\n ${ingredients.join(', ')}. Do not include in the response special characters like <, >, {, }, etc. The response should be in JSON format with the following structure: {\"recipes\": [{\"day\": \"Monday\", \"name\": \"Recipe Name\", \"prepTime\": \"15 min\", \"cookTime\": \"20 min\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"instructions\": \"Cooking instructions here.\"}]}""",
+      "prompt": "Suppose that you are a terrific chef. Create a menu for one week and be cooked or preprared below 30 min with the following ingridients please specified the prep time in minutes like 15 min, 20 min, etc, the cooking time will be also in minutes like 5min, 15min, etc, and the ingredient amount for every recipe:\n ${ingredients.join(', ')}. Do not include in the response special characters like <, >, {, }, etc. The response should be in JSON format with the following structure: {\"recipes\": [{\"day\": \"Monday\", \"name\": \"Recipe Name\", \"prepTime\": \"15 min\", \"cookTime\": \"20 min\", \"ingredients\": [\"ingredient1\", \"ingredient2\"], \"instructions\": \"Cooking instructions here.\"}]}""",
       "stream": false,
       "format": {
         "type": "object",
