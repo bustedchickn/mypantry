@@ -206,7 +206,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         final name = nameSnapshot.data ?? requesterId;
                         return ListTile(
                           title: Text(name),
-                          subtitle: Text(requesterId),
+                          // subtitle: Text(requesterId),
                           trailing: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -254,7 +254,7 @@ class _FriendsPageState extends State<FriendsPage> {
                         final name = nameSnapshot.data ?? friendId;
                         return ListTile(
                           title: Text(name),
-                          subtitle: Text(friendId),
+                          // subtitle: Text(friendId),
                           trailing: IconButton(
                           icon: const Icon(Icons.remove_circle_outline),
                           onPressed: () => removeFriend(friendId),

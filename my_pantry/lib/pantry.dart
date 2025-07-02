@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_pantry/widgets/shared_users_list.dart';
 
 class PantryPage extends StatefulWidget {
   const PantryPage({super.key});
@@ -207,6 +208,77 @@ class _PantryPageState extends State<PantryPage>
       _rotationController.stop();
     });
   }
+
+  Future<void> showFriendShareDialog(BuildContext context, String listId) async {
+  final currentUid = FirebaseAuth.instance.currentUser!.uid;
+  final userDoc = await FirebaseFirestore.instance.collection('users').doc(currentUid).get();
+  final friendIds = List<String>.from(userDoc.data()?['friends'] ?? []);
+
+  Map<String, String> friendNames = {};
+
+  // Fetch friend names
+  for (var id in friendIds) {
+    final doc = await FirebaseFirestore.instance.collection('users').doc(id).get();
+    final name = doc.data()?['name'] ?? id;
+    friendNames[id] = name;
+  }
+
+  final selected = <String>{};
+
+  await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Share List With Friends'),
+      content: SingleChildScrollView(
+        child: Column(
+          children: friendIds.map((id) {
+            return CheckboxListTile(
+              value: selected.contains(id),
+              title: Text(friendNames[id]!),
+              onChanged: (bool? value) {
+                if (value == true) {
+                  selected.add(id);
+                } else {
+                  selected.remove(id);
+                }
+                // Needed to refresh dialog UI
+                (context as Element).markNeedsBuild();
+              },
+            );
+          }).toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: () async {
+            try {
+              for (var uid in selected) {
+                await addUserToList(listId, uid);
+              }
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('List shared with ${selected.length} friend(s).')),
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error sharing: $e')),
+              );
+            }
+          },
+          child: const Text('Share'),
+        ),
+      ],
+    ),
+  );
+}
+
+
+
+
 
   // adding delete function
   Future<void> removePantry(String pantryId) async {
@@ -464,59 +536,26 @@ class _PantryPageState extends State<PantryPage>
           if (selectedListId != null)
             Padding(
               padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ElevatedButton(
                 onPressed: () async {
-                  final controller = TextEditingController();
-                  await showDialog(
-                    context: context,
-                    builder:
-                        (context) => AlertDialog(
-                          title: Text('Share Pantry'),
-                          content: TextField(
-                            controller: controller,
-                            decoration: InputDecoration(
-                              hintText: 'User UID to share with',
-                            ),
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
-                              child: Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () async {
-                                final uid = controller.text.trim();
-                                if (uid.isNotEmpty) {
-                                  try {
-                                    await addUserToList(selectedListId!, uid);
-                                    Navigator.pop(context);
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text(
-                                          'List shared with UID $uid',
-                                        ),
-                                      ),
-                                    );
-                                  } catch (e) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(
-                                        content: Text('Error sharing: $e'),
-                                      ),
-                                    );
-                                  }
-                                }
-                              },
-                              child: Text('Share'),
-                            ),
-                          ],
-                        ),
-                  );
+                  if (selectedListId != null) {
+                    await showFriendShareDialog(context, selectedListId!);
+                  }
                 },
-                child: Text('Share This Pantry'),
+                child: const Text('Share This List'),
+                
               ),
+              SharedUsersList(listId: selectedListId!, collection: 'Pantrys'),
+                ],
+              )
+              
+              
             ),
+
+
           Divider(),
           // Items
           if (selectedListId != null)
