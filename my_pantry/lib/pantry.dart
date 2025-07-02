@@ -17,7 +17,7 @@ class _PantryPageState extends State<PantryPage>
   late AnimationController _rotationController;
   late Animation<double> _rotationAnimation;
 
-  List<Map<String, dynamic>> Pantrys = [];
+  List<Map<String, dynamic>> pantries = [];
   String? selectedListId;
   List<Map<String, dynamic>> items = [];
   Map<String, TextEditingController> controllerMap = {};
@@ -25,7 +25,7 @@ class _PantryPageState extends State<PantryPage>
   @override
   void initState() {
     super.initState();
-    fetchPantrys();
+    fetchPantries();
 
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -44,12 +44,12 @@ class _PantryPageState extends State<PantryPage>
 
   Future<void> createPantry(String name, List<String> userIds) async {
     try {
-      await _firestore.collection('Pantrys').add({
+      await _firestore.collection('Pantries').add({
         'name': name,
         'sharedWith': userIds,
       });
 
-      fetchPantrys();
+      fetchPantries();
     } catch (e) {
       print('Error creating pantry: $e'); // Debugging log
     }
@@ -57,27 +57,27 @@ class _PantryPageState extends State<PantryPage>
 
   Future<void> addUserToList(String listId, String userId) async {
     print("This is a test");
-    await _firestore.collection('Pantrys').doc(listId).update({
+    await _firestore.collection('Pantries').doc(listId).update({
       'sharedWith': FieldValue.arrayUnion([userId]),
     });
-    fetchPantrys();
+    fetchPantries();
   }
 
-  Future<void> fetchPantrys() async {
+  Future<void> fetchPantries() async {
     try {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       print('Fetching pantries for user: $userId'); // Debugging log
       final snapshot =
           await _firestore
-              .collection('Pantrys')
+              .collection('Pantries')
               .where('sharedWith', arrayContains: userId)
               .get();
       setState(() {
-        Pantrys =
+        pantries =
             snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
-        print('Fetched pantries: $Pantrys'); // Debugging log
-        if (Pantrys.isNotEmpty && selectedListId == null) {
-          selectedListId = Pantrys.first['id'];
+        print('Fetched pantries: $pantries'); // Debugging log
+        if (pantries.isNotEmpty && selectedListId == null) {
+          selectedListId = pantries.first['id'];
           listenToItems(selectedListId!);
         }
       });
@@ -88,7 +88,7 @@ class _PantryPageState extends State<PantryPage>
 
   void listenToItems(String listId) {
     _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .doc(listId)
         .collection('items')
         .orderBy('order')
@@ -140,7 +140,7 @@ class _PantryPageState extends State<PantryPage>
     final batch = _firestore.batch();
     for (int i = 0; i < reordered.length; i++) {
       final docRef = _firestore
-          .collection('Pantrys')
+          .collection('Pantries')
           .doc(selectedListId)
           .collection('items')
           .doc(reordered[i]['id']);
@@ -151,7 +151,7 @@ class _PantryPageState extends State<PantryPage>
   }
 
   Future<void> addItemToList(String listId, String itemName) async {
-    await _firestore.collection('Pantrys').doc(listId).collection('items').add({
+    await _firestore.collection('Pantries').doc(listId).collection('items').add({
       'item': itemName,
       'checked': false,
       'order': items.length, // add to the end
@@ -162,7 +162,7 @@ class _PantryPageState extends State<PantryPage>
   Future<void> updateItem(String listId, int index, String newText) async {
     final id = items[index]['id'];
     await _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .doc(listId)
         .collection('items')
         .doc(id)
@@ -176,7 +176,7 @@ class _PantryPageState extends State<PantryPage>
     final id = items[index]['id'];
     final newCheckedValue = !items[index]['checked'];
     await _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .doc(listId)
         .collection('items')
         .doc(id)
@@ -188,7 +188,7 @@ class _PantryPageState extends State<PantryPage>
 
   Future<void> removeItemById(String listId, String itemId) async {
     await _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .doc(listId)
         .collection('items')
         .doc(itemId)
@@ -286,7 +286,7 @@ class _PantryPageState extends State<PantryPage>
       // Delete all subcollection items first
       final itemsSnapshot =
           await _firestore
-              .collection('Pantrys')
+              .collection('Pantries')
               .doc(pantryId)
               .collection('items')
               .get();
@@ -296,7 +296,7 @@ class _PantryPageState extends State<PantryPage>
       }
 
       // Delete the pantry itself
-      await _firestore.collection('Pantrys').doc(pantryId).delete();
+      await _firestore.collection('Pantries').doc(pantryId).delete();
 
       // If the deleted pantry was selected, reset selection
       if (selectedListId == pantryId) {
@@ -304,7 +304,7 @@ class _PantryPageState extends State<PantryPage>
         items.clear();
       }
 
-      fetchPantrys(); // Refresh pantry list
+      fetchPantries(); // Refresh pantry list
     } catch (e) {
       print('Error deleting pantry: $e');
     }
@@ -423,7 +423,7 @@ class _PantryPageState extends State<PantryPage>
       body: Column(
         children: [
           // List selector
-          if (Pantrys.isNotEmpty)
+          if (pantries.isNotEmpty)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(
@@ -433,7 +433,7 @@ class _PantryPageState extends State<PantryPage>
                       value: selectedListId,
                       hint: Text('Select a pantry'),
                       items:
-                          Pantrys.map((list) {
+                          pantries.map((list) {
                             return DropdownMenuItem<String>(
                               value: list['id'],
                               child: Text(list['name'] ?? 'Unnamed List'),
@@ -548,7 +548,7 @@ class _PantryPageState extends State<PantryPage>
                 child: const Text('Share This List'),
                 
               ),
-              SharedUsersList(listId: selectedListId!, collection: 'Pantrys'),
+              SharedUsersList(listId: selectedListId!, collection: 'Pantries'),
                 ],
               )
               

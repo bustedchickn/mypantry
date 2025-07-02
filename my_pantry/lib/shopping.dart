@@ -165,7 +165,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
     // Fetch all pantries shared with this user
     final pantrySnapshot = await _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .where('sharedWith', arrayContains: userId)
         .get();
 
@@ -226,7 +226,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
       // 1. Get max order in pantry items first
   final pantryItemsSnapshot = await _firestore
-      .collection('Pantrys')  // Note: spelling matches your collection
+      .collection('Pantries')  // Note: spelling matches your collection
       .doc(selectedPantryId)
       .collection('items')
       .orderBy('order', descending: true)
@@ -242,7 +242,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
   for (var item in checkedItems) {
     final pantryItemRef = _firestore
-        .collection('Pantrys')
+        .collection('Pantries')
         .doc(selectedPantryId)
         .collection('items')
         .doc();
