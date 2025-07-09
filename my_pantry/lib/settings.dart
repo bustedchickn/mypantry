@@ -21,7 +21,7 @@ class SettingsPage extends StatelessWidget {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Drawer Header'),
+              child: Text('Pages'),
             ),
 
             ListTile(

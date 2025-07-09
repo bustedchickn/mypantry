@@ -132,7 +132,7 @@ class _FriendsPageState extends State<FriendsPage> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Drawer Header'),
+              child: Text('Pages'),
             ),
 
             ListTile(

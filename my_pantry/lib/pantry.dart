@@ -126,6 +126,32 @@ class _PantryPageState extends State<PantryPage>
           });
         });
   }
+  void showCreatePantryDialog(String userId) {
+  final controller = TextEditingController();
+  showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: Text('Create Pantry'),
+      content: TextField(
+        controller: controller,
+        decoration: InputDecoration(hintText: 'Pantry name'),
+      ),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(context), child: Text('Cancel')),
+        TextButton(
+          onPressed: () {
+            if (controller.text.trim().isNotEmpty) {
+              createPantry(controller.text.trim(), [userId]);
+              Navigator.pop(context);
+            }
+          },
+          child: Text('Create'),
+        ),
+      ],
+    ),
+  );
+}
+
 
   Future<void> reorderItems(int oldIndex, int newIndex) async {
     if (newIndex > oldIndex) newIndex -= 1;
@@ -372,7 +398,7 @@ class _PantryPageState extends State<PantryPage>
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Drawer Header'),
+              child: Text('Pages'),
             ),
 
             ListTile(
@@ -421,197 +447,144 @@ class _PantryPageState extends State<PantryPage>
 
       // body
       body: Column(
-        children: [
-          // List selector
-          if (pantries.isNotEmpty)
+  children: [
+    // 🧰 Pantry management section
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ExpansionTile(
+          title: const Text('Manage Pantry'),
+          initiallyExpanded: false,
+          children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Row(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: DropdownButton<String>(
-                      value: selectedListId,
-                      hint: Text('Select a pantry'),
-                      items:
-                          pantries.map((list) {
+                  // Dropdown + Delete icon
+                  Row(
+                    children: [
+                      Expanded(
+                        child: DropdownButton<String>(
+                          value: selectedListId,
+                          hint: const Text('Select a pantry'),
+                          isExpanded: true,
+                          items: pantries.map((list) {
                             return DropdownMenuItem<String>(
                               value: list['id'],
                               child: Text(list['name'] ?? 'Unnamed List'),
                             );
                           }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          selectedListId = value;
-                        });
-                        if (value != null) listenToItems(value);
-                      },
-                    ),
-                  ),
-                  if (selectedListId != null)
-                    AnimatedBuilder(
-                      animation: _rotationController,
-                      builder: (context, child) {
-                        return Transform.rotate(
-                          angle: _rotationAnimation.value,
-                          child: child,
-                        );
-                      },
-                      child: IconButton(
-                        icon: Icon(Icons.delete, color: Colors.red),
-                        tooltip: 'Delete Pantry',
-                        onPressed: () async {
-                          _rotationController.forward(from: 0); // Start wiggle
-
-                          final confirm = await showDialog<bool>(
-                            context: context,
-                            builder:
-                                (context) => AlertDialog(
-                                  title: Text('Delete Pantry'),
-                                  content: Text(
-                                    'Are you sure you want to delete this pantry?',
-                                  ),
-                                  actions: [
-                                    TextButton(
-                                      child: Text('Cancel'),
-                                      onPressed:
-                                          () => Navigator.pop(context, false),
-                                    ),
-                                    TextButton(
-                                      child: Text('Delete'),
-                                      onPressed:
-                                          () => Navigator.pop(context, true),
-                                    ),
-                                  ],
-                                ),
-                          );
-
-                          if (confirm == true && selectedListId != null) {
-                            await removePantry(selectedListId!);
-                          }
-                        },
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          // Create new list
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () async {
-                final controller = TextEditingController();
-                await showDialog(
-                  context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: Text('Create Pantry'),
-                        content: TextField(
-                          controller: controller,
-                          decoration: InputDecoration(hintText: 'Pantry name'),
+                          onChanged: (value) {
+                            setState(() => selectedListId = value);
+                            if (value != null) listenToItems(value);
+                          },
                         ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              if (controller.text.trim().isNotEmpty) {
-                                createPantry(controller.text.trim(), [userId]);
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: Text('Create'),
-                          ),
-                        ],
                       ),
-                );
-              },
-              child: Text('Create New Pantry'),
-            ),
-          ),
-          // Add user to list
-          if (selectedListId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ElevatedButton(
-                onPressed: () async {
-                  if (selectedListId != null) {
-                    await showFriendShareDialog(context, selectedListId!);
-                  }
-                },
-                child: const Text('Share This List'),
-                
-              ),
-              SharedUsersList(listId: selectedListId!, collection: 'Pantries'),
-                ],
-              )
-              
-              
-            ),
+                      if (selectedListId != null)
+                        IconButton(
+                          icon: const Icon(Icons.delete, color: Colors.red),
+                          tooltip: 'Delete Pantry',
+                          onPressed: () => removePantry(selectedListId!),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(child: ElevatedButton(
+                    onPressed: () => showCreatePantryDialog(userId),
+                    child: const Text('Create New Pantry'),
+                  ),),
+                    const SizedBox(height: 8),
 
+                    if (selectedListId != null)...[Expanded(child: ElevatedButton(
+                      onPressed: () => showFriendShareDialog(context, selectedListId!),
+                      child: const Text('Share This List'),
+                    ),),]
+                    
+                  ],),
+                  // Create pantry button
+                  
+                  
 
-          Divider(),
-          // Items
-          if (selectedListId != null)
-            Expanded(
-              child: ReorderableListView(
-                onReorder:
-                    (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
-                children: [
-                  for (int index = 0; index < items.length; index++)
-                    buildItem(index, key: ValueKey(items[index]['id'])),
+                  // Share & Shared users
+                  if (selectedListId != null) ...[
+                    const SizedBox(height: 8),
+                    SharedUsersList(
+                      listId: selectedListId!,
+                      collection: 'Pantries',
+                    ),
+                  ],
+                  const SizedBox(height: 12),
                 ],
               ),
             ),
-          if (selectedListId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _ghostController,
-                focusNode: _ghostFocusNode,
-                decoration: InputDecoration(
-                  hintText: 'Add item...',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) {
-                  if (selectedListId != null && value.trim().isNotEmpty) {
-                    addItemToList(selectedListId!, value.trim());
-                    _ghostController.clear();
-                  }
-                  FocusScope.of(context).requestFocus(_ghostFocusNode);
-                },
-              ),
-            ),
-          if (selectedListId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ElevatedButton(
-                onPressed: () {
-                  final selectedIngredients =
-                      items
-                          .where((item) => item['checked'] == true)
-                          .map<String>((item) => item['item'].toString())
-                          .toList();
-
-                  Navigator.pushNamed(
-                    context,
-                    '/ai', // or whatever route you want
-                    arguments: selectedIngredients,
-                  );
-                },
-                child: Text('Send Selected Ingredients'),
-              ),
-            ),
-
-          // this is the Bottom Navigation bar
-        ],
+          ],
+        ),
       ),
+    ),
+
+    const Divider(),
+
+    // 📝 Pantry item list
+    if (selectedListId != null)
+      Expanded(
+        child: ReorderableListView(
+          onReorder: (oldIndex, newIndex) =>
+              reorderItems(oldIndex, newIndex),
+          children: [
+            for (int index = 0; index < items.length; index++)
+              buildItem(index, key: ValueKey(items[index]['id'])),
+          ],
+        ),
+      ),
+
+    // ➕ Add item field
+    if (selectedListId != null)
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: _ghostController,
+          focusNode: _ghostFocusNode,
+          decoration: const InputDecoration(
+            hintText: 'Add item...',
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              addItemToList(selectedListId!, value.trim());
+              _ghostController.clear();
+            }
+            FocusScope.of(context).requestFocus(_ghostFocusNode);
+          },
+        ),
+      ),
+
+    // 🚚 Send ingredients button
+    if (selectedListId != null)
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ElevatedButton(
+          onPressed: () {
+            final selectedIngredients = items
+                .where((item) => item['checked'] == true)
+                .map<String>((item) => item['item'].toString())
+                .toList();
+
+            Navigator.pushNamed(
+              context,
+              '/ai',
+              arguments: selectedIngredients,
+            );
+          },
+          child: const Text('Send Selected Ingredients'),
+        ),
+      ),
+  ],
+),
+
     );
   }
 }

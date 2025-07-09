@@ -425,7 +425,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
           children: [
             const DrawerHeader(
               decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Drawer Header'),
+              child: Text('Pages'),
             ),
 
             ListTile(
@@ -468,136 +468,141 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
 
       // body
       body: Column(
-        children: [
-          // List selector
-          if (shoppingLists.isNotEmpty)
+  children: [
+    // 🧰 Shopping list management section
+    Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+      child: Card(
+        elevation: 2,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        child: ExpansionTile(
+          title: const Text('Manage Shopping List'),
+          initiallyExpanded: false,
+          children: [
             Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: DropdownButton<String>(
-                value: selectedListId,
-                hint: Text('Select a list'),
-                items:
-                    shoppingLists.map((list) {
-                      return DropdownMenuItem<String>(
-                        value: list['id'],
-                        child: Text(list['name'] ?? 'Unnamed List'),
-                      );
-                    }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedListId = value;
-                  });
-                  if (value != null) listenToItems(value);
-                },
-              ),
-            ),
-          // Create new list
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton(
-              onPressed: () async {
-                final controller = TextEditingController();
-                await showDialog(
-                  context: context,
-                  builder:
-                      (context) => AlertDialog(
-                        title: Text('Create Shopping List'),
-                        content: TextField(
-                          controller: controller,
-                          decoration: InputDecoration(hintText: 'List name'),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                            child: Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              if (controller.text.trim().isNotEmpty) {
-                                createShoppingList(controller.text.trim(), [
-                                  userId,
-                                ]);
-                                Navigator.pop(context);
-                              }
-                            },
-                            child: Text('Create'),
-                          ),
-                        ],
-                      ),
-                );
-              },
-              child: Text('Create New List'),
-            ),
-          ),
-          // Add user to list
-          if (selectedListId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  ElevatedButton(
-                onPressed: () async {
-                  if (selectedListId != null) {
-                    await showFriendShareDialog(context, selectedListId!);
-                  }
-                },
-                child: const Text('Share This List'),
-                
-              ),
-              SharedUsersList(listId: selectedListId!),
-                ],
-              )
-              
-              
-            ),
-            if (selectedListId != null)
-              Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton.icon(
-                  onPressed: moveCheckedItemsToPantry,
-                  icon: const Icon(Icons.move_to_inbox),
-                  label: const Text('Move Checked to Pantry'),
-                ),
-              ),
+                  // Dropdown for list selection
+                  if (shoppingLists.isNotEmpty)
+                    DropdownButton<String>(
+                      value: selectedListId,
+                      hint: const Text('Select a list'),
+                      isExpanded: true,
+                      items: shoppingLists.map((list) {
+                        return DropdownMenuItem<String>(
+                          value: list['id'],
+                          child: Text(list['name'] ?? 'Unnamed List'),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() => selectedListId = value);
+                        if (value != null) listenToItems(value);
+                      },
+                    ),
+                  const SizedBox(height: 8),
 
-            
-          Divider(),
-          // Items
-          if (selectedListId != null)
-            Expanded(
-              child: ReorderableListView(
-                onReorder:
-                    (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
-                children: [
-                  for (int index = 0; index < items.length; index++)
-                    buildItem(index, key: ValueKey(items[index]['id'])),
+                  // Create new list
+                  ElevatedButton(
+                    onPressed: () async {
+                      final controller = TextEditingController();
+                      await showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Create Shopping List'),
+                          content: TextField(
+                            controller: controller,
+                            decoration: const InputDecoration(hintText: 'List name'),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Cancel'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                if (controller.text.trim().isNotEmpty) {
+                                  createShoppingList(controller.text.trim(), [userId]);
+                                  Navigator.pop(context);
+                                }
+                              },
+                              child: const Text('Create'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: const Text('Create New List'),
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Share + shared users
+                  if (selectedListId != null) ...[
+                    ElevatedButton(
+                      onPressed: () => showFriendShareDialog(context, selectedListId!),
+                      child: const Text('Share This List'),
+                    ),
+                    const SizedBox(height: 8),
+                    SharedUsersList(listId: selectedListId!),
+                  ],
+                  const SizedBox(height: 12),
                 ],
               ),
             ),
-          if (selectedListId != null)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: TextField(
-                controller: _ghostController,
-                focusNode: _ghostFocusNode,
-                decoration: InputDecoration(
-                  hintText: 'Add item...',
-                  border: OutlineInputBorder(),
-                ),
-                onSubmitted: (value) {
-                  if (selectedListId != null && value.trim().isNotEmpty) {
-                    addItemToList(selectedListId!, value.trim());
-                    _ghostController.clear();
-                  }
-                  FocusScope.of(context).requestFocus(_ghostFocusNode);
-                },
-              ),
-            ),
-        ],
+          ],
+        ),
       ),
+    ),
+
+    // 📦 Move checked to pantry
+    if (selectedListId != null)
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0),
+        child: ElevatedButton.icon(
+          onPressed: moveCheckedItemsToPantry,
+          icon: const Icon(Icons.move_to_inbox),
+          label: const Text('Move Checked to Pantry'),
+        ),
+      ),
+
+    const Divider(),
+
+    // 📝 Shopping list items
+    if (selectedListId != null)
+      Expanded(
+        child: ReorderableListView(
+          onReorder: (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
+          children: [
+            for (int index = 0; index < items.length; index++)
+              buildItem(index, key: ValueKey(items[index]['id'])),
+          ],
+        ),
+      ),
+
+    // ➕ Add item field
+    if (selectedListId != null)
+      Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: TextField(
+          controller: _ghostController,
+          focusNode: _ghostFocusNode,
+          decoration: const InputDecoration(
+            hintText: 'Add item...',
+            border: OutlineInputBorder(),
+          ),
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              addItemToList(selectedListId!, value.trim());
+              _ghostController.clear();
+            }
+            FocusScope.of(context).requestFocus(_ghostFocusNode);
+          },
+        ),
+      ),
+  ],
+),
+
     );
   }
 }
