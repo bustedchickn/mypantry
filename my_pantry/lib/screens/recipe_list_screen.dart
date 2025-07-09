@@ -40,7 +40,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     });
 
     try {
-      final jsonResponse = await _apiService.fetchRecipesFromOllama(_ingredients);
+      final jsonResponse = await _apiService.fetchRecipesFromOllamaPersistent(_ingredients);
       final parsedRecipes = RecipeParser.parseRecipesFromJson(jsonResponse);
 
       setState(() {

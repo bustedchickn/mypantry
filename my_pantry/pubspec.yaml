@@ -45,7 +45,10 @@ dependencies:
   # Logging framework for proper error logging
   logging: ^1.3.0
   qr_flutter: ^4.0.0
-  mobile_scanner: ^4.0.0 
+  mobile_scanner: ^4.0.0
+  # Persistent storage for user preferences and app settings
+  # This is used to store user preferences such as theme, language, etc.
+  shared_preferences: ^2.5.3
   
 dev_dependencies:
   flutter_test:
