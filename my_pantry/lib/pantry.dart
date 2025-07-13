@@ -19,6 +19,9 @@ class _PantryPageState extends State<PantryPage>
 
   List<Map<String, dynamic>> pantries = [];
   String? selectedListId;
+  List<Map<String, dynamic>> shoppingLists = [];
+  String? selectedShoppingListId;
+
   List<Map<String, dynamic>> items = [];
   Map<String, TextEditingController> controllerMap = {};
 
@@ -26,6 +29,7 @@ class _PantryPageState extends State<PantryPage>
   void initState() {
     super.initState();
     fetchPantries();
+    fetchShoppingLists();
 
     _rotationController = AnimationController(
       duration: const Duration(milliseconds: 600),
@@ -62,6 +66,22 @@ class _PantryPageState extends State<PantryPage>
     });
     fetchPantries();
   }
+  Future<void> fetchShoppingLists() async {
+  final userId = FirebaseAuth.instance.currentUser!.uid;
+  final snapshot = await _firestore
+      .collection('shoppingLists')
+      .where('sharedWith', arrayContains: userId)
+      .get();
+
+  setState(() {
+    shoppingLists =
+        snapshot.docs.map((doc) => {'id': doc.id, ...doc.data()}).toList();
+    if (shoppingLists.isNotEmpty && selectedShoppingListId == null) {
+      selectedShoppingListId = shoppingLists.first['id'];
+    }
+  });
+}
+
 
   Future<void> fetchPantries() async {
     try {
@@ -184,6 +204,47 @@ class _PantryPageState extends State<PantryPage>
     });
     listenToItems(listId);
   }
+
+  Future<void> moveCheckedToShoppingList() async {
+  final pantryId = selectedListId;
+  final shoppingListId = selectedShoppingListId;
+
+  if (pantryId == null || shoppingListId == null) return;
+
+  final checkedItems = items.where((item) => item['checked'] == true);
+
+  final batch = _firestore.batch();
+
+  for (final item in checkedItems) {
+    final itemId = item['id'];
+    final itemData = {
+      'item': item['item'],
+      'checked': false,
+      'order': FieldValue.increment(1),
+    };
+
+    // Add to shopping list
+    final shoppingItemRef = _firestore
+        .collection('shoppingLists')
+        .doc(shoppingListId)
+        .collection('items')
+        .doc();
+
+    batch.set(shoppingItemRef, itemData);
+
+    // Remove from pantry
+    final pantryItemRef = _firestore
+        .collection('Pantries')
+        .doc(pantryId)
+        .collection('items')
+        .doc(itemId);
+
+    batch.delete(pantryItemRef);
+  }
+
+  await batch.commit();
+}
+
 
   Future<void> updateItem(String listId, int index, String newText) async {
     final id = items[index]['id'];
@@ -526,6 +587,37 @@ class _PantryPageState extends State<PantryPage>
       ),
     ),
 
+    Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+  child: Card(
+    elevation: 2,
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    child: ExpansionTile(
+      title: const Text('Select Shopping List'),
+      initiallyExpanded: false,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          child: DropdownButton<String>(
+            value: selectedShoppingListId,
+            hint: const Text('Select a shopping list'),
+            isExpanded: true,
+            items: shoppingLists.map((list) {
+              return DropdownMenuItem<String>(
+                value: list['id'],
+                child: Text(list['name'] ?? 'Unnamed List'),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() => selectedShoppingListId = value);
+            },
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
     const Divider(),
 
     // 📝 Pantry item list
@@ -582,6 +674,18 @@ class _PantryPageState extends State<PantryPage>
           child: const Text('Send Selected Ingredients'),
         ),
       ),
+    
+    if (selectedListId != null && selectedShoppingListId != null)
+  Padding(
+    padding: const EdgeInsets.all(8.0),
+    child: ElevatedButton.icon(
+      icon: const Icon(Icons.shopping_cart),
+      label: const Text('Move Checked to Shopping List'),
+      onPressed: () => moveCheckedToShoppingList(),
+    ),
+  ),
+
+
   ],
 ),
 

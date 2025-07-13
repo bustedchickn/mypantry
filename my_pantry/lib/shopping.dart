@@ -562,7 +562,7 @@ class _ShoppingListPageState extends State<ShoppingListPage> {
         child: ElevatedButton.icon(
           onPressed: moveCheckedItemsToPantry,
           icon: const Icon(Icons.move_to_inbox),
-          label: const Text('Move Checked to Pantry'),
+          label: const Text('Add Checked Items to Pantry'),
         ),
       ),
 
