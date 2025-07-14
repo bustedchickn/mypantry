@@ -3,6 +3,7 @@ import 'package:my_pantry/qrcode.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:my_pantry/widgets/appdrawer.dart';
 
 class FriendsPage extends StatefulWidget {
   const FriendsPage({super.key});
@@ -126,53 +127,7 @@ class _FriendsPageState extends State<FriendsPage> {
     return Scaffold(
       appBar: AppBar(title: const Text('Friends & Requests')),
       // nav drawer
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Pages'),
-            ),
-
-            ListTile(
-              title: const Text('Pantry'),
-              onTap: () {
-                Navigator.pushNamed(context, '/pantry');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Shopping List'),
-              onTap: () {
-                Navigator.pushNamed(context, '/shopping');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Recipe'),
-              onTap: () {
-                Navigator.pushNamed(context, '/ai');
-              },
-            ),
-            ListTile(
-              title: const Text('Friends'),
-              onTap: () {
-                Navigator.pushNamed(context, '/friends');
-              },
-            ),
-
-            ListTile(title: const Text('Settings'), onTap: () {
-              Navigator.pushNamed(context, '/settings');
-            }),
-
-            ListTile(title: const Text('Sign out'), onTap: () {
-              Navigator.pushNamed(context, '/sign_in');
-            }),
-          ],
-        ),
-      ),
-
+      endDrawer: AppDrawer(),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(

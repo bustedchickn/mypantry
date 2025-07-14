@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../Models/recipe_model.dart';
 import '../utils/recipe_parser.dart';
 import '../widgets/recipe_card.dart';
+import '../widgets/appdrawer.dart';
 import '../utils/api_service.dart';
 
 class RecipeListScreen extends StatefulWidget {
@@ -66,6 +67,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Weekly Meal Plan'),
+        
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),
@@ -73,6 +75,7 @@ class _RecipeListScreenState extends State<RecipeListScreen> {
           ),
         ],
       ),
+      endDrawer: AppDrawer(),
       body: _buildBody(),
     );
   }

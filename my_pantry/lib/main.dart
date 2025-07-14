@@ -11,6 +11,8 @@ import 'package:my_pantry/sign_up.dart';
 import 'package:my_pantry/account.dart';
 import 'package:my_pantry/qrcode.dart';
 import 'package:my_pantry/friend.dart';
+import 'package:my_pantry/homepage.dart';
+
 
 
 void main() async {
@@ -51,6 +53,7 @@ class MyPantryApp extends StatelessWidget {
         '/account': (context) => const AccountPage(),
         '/ai':(context) => const RecipeListScreen(),
         '/qr':(context) => const QRScannerPage(),
+        '/homepager':(context) => const HomePager(),
       },
     );
   }
@@ -68,7 +71,7 @@ class AuthWrapper extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasData) {
-          return const PantryPage(); // Signed in
+          return const HomePager(); // Signed in
         } else {
           return const SignInPage(); // Not signed in
         }

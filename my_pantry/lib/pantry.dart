@@ -6,10 +6,10 @@ import 'package:my_pantry/widgets/shared_users_list.dart';
 class PantryPage extends StatefulWidget {
   const PantryPage({super.key});
   @override
-  State<PantryPage> createState() => _PantryPageState();
+  State<PantryPage> createState() => PantryPageState();
 }
 
-class _PantryPageState extends State<PantryPage>
+class PantryPageState extends State<PantryPage>
     with SingleTickerProviderStateMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final TextEditingController _ghostController = TextEditingController();
@@ -45,6 +45,10 @@ class _PantryPageState extends State<PantryPage>
       CurvedAnimation(parent: _rotationController, curve: Curves.easeInOut),
     );
   }
+  String? get selectedListName => selectedListId != null
+    ? pantries.firstWhere((p) => p['id'] == selectedListId, orElse: () => {'name': ''})['name']
+    : null;
+    
 
   Future<void> createPantry(String name, List<String> userIds) async {
     try {
@@ -204,6 +208,57 @@ class _PantryPageState extends State<PantryPage>
     });
     listenToItems(listId);
   }
+
+  Future<void> showMoveToShoppingListDialog() async {
+  if (shoppingLists.isEmpty) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('No shopping lists available!')),
+    );
+    return;
+  }
+
+  String? tempSelected = selectedShoppingListId ?? shoppingLists.first['id'];
+
+  await showDialog(
+    context: context,
+    builder: (context) => AlertDialog(
+      title: const Text('Select Shopping List'),
+      content: DropdownButton<String>(
+        value: tempSelected,
+        isExpanded: true,
+        items: shoppingLists.map((list) {
+          return DropdownMenuItem<String>(
+            value: list['id'],
+            child: Text(list['name'] ?? 'Unnamed List'),
+          );
+        }).toList(),
+        onChanged: (value) {
+          tempSelected = value;
+          (context as Element).markNeedsBuild(); // rebuild dialog
+        },
+      ),
+      actions: [
+        TextButton(
+          child: const Text('Cancel'),
+          onPressed: () => Navigator.pop(context),
+        ),
+        ElevatedButton(
+          child: const Text('Move'),
+          onPressed: () async {
+            if (tempSelected != null) {
+              setState(() {
+                selectedShoppingListId = tempSelected;
+              });
+              Navigator.pop(context);
+              await moveCheckedToShoppingList();
+            }
+          },
+        ),
+      ],
+    ),
+  );
+}
+
 
   Future<void> moveCheckedToShoppingList() async {
   final pantryId = selectedListId;
@@ -448,247 +503,182 @@ class _PantryPageState extends State<PantryPage>
   }
 
   @override
-  Widget build(BuildContext context) {
-    final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
-    return Scaffold(
-      appBar: AppBar(title: const Text('Pantry')),
-      // this is the drawer next to the appbar
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.yellow),
-              child: Text('Pages'),
-            ),
+Widget build(BuildContext context) {
+  final userId = FirebaseAuth.instance.currentUser?.uid ?? '';
 
-            ListTile(
-              title: const Text('Pantry'),
-              onTap: () {
-                Navigator.pushNamed(context, '/pantry');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Shopping List'),
-              onTap: () {
-                Navigator.pushNamed(context, '/shopping');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Recipe'),
-              onTap: () {
-                Navigator.pushNamed(context, '/ai');
-              },
-            ),
-            ListTile(
-              title: const Text('Friends'),
-              onTap: () {
-                Navigator.pushNamed(context, '/friends');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Settings'),
-              onTap: () {
-                Navigator.pushNamed(context, '/settings');
-              },
-            ),
-
-            ListTile(
-              title: const Text('Sign out'),
-              onTap: () {
-                Navigator.pushNamed(context, '/sign_in');
-              },
-            ),
-          ],
-        ),
-      ),
-
-      // body
-      body: Column(
-  children: [
-    // 🧰 Pantry management section
-    Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-      child: Card(
-        elevation: 2,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: ExpansionTile(
-          title: const Text('Manage Pantry'),
-          initiallyExpanded: false,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Dropdown + Delete icon
-                  Row(
-                    children: [
+  return Column(
+    children: [
+      // 🧰 Pantry management section
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
+        child: Card(
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: ExpansionTile(
+            title: const Text('Manage Pantry'),
+            initiallyExpanded: false,
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Dropdown + Delete icon
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButton<String>(
+                            value: selectedListId,
+                            hint: const Text('Select a pantry'),
+                            isExpanded: true,
+                            items: pantries.map((list) {
+                              return DropdownMenuItem<String>(
+                                value: list['id'],
+                                child: Text(list['name'] ?? 'Unnamed List'),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              setState(() => selectedListId = value);
+                              if (value != null) listenToItems(value);
+                            },
+                          ),
+                        ),
+                        if (selectedListId != null)
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            tooltip: 'Delete Pantry',
+                            onPressed: () => removePantry(selectedListId!),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(children: [
                       Expanded(
-                        child: DropdownButton<String>(
-                          value: selectedListId,
-                          hint: const Text('Select a pantry'),
-                          isExpanded: true,
-                          items: pantries.map((list) {
-                            return DropdownMenuItem<String>(
-                              value: list['id'],
-                              child: Text(list['name'] ?? 'Unnamed List'),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            setState(() => selectedListId = value);
-                            if (value != null) listenToItems(value);
-                          },
+                        child: ElevatedButton(
+                          onPressed: () => showCreatePantryDialog(userId),
+                          child: const Text('Create New Pantry'),
                         ),
                       ),
+                      const SizedBox(width: 8),
                       if (selectedListId != null)
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          tooltip: 'Delete Pantry',
-                          onPressed: () => removePantry(selectedListId!),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: () => showFriendShareDialog(context, selectedListId!),
+                            child: const Text('Share This List'),
+                          ),
                         ),
+                    ]),
+                    if (selectedListId != null) ...[
+                      const SizedBox(height: 8),
+                      SharedUsersList(
+                        listId: selectedListId!,
+                        collection: 'Pantries',
+                      ),
                     ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(children: [
-                    Expanded(child: ElevatedButton(
-                    onPressed: () => showCreatePantryDialog(userId),
-                    child: const Text('Create New Pantry'),
-                  ),),
-                    const SizedBox(height: 8),
-
-                    if (selectedListId != null)...[Expanded(child: ElevatedButton(
-                      onPressed: () => showFriendShareDialog(context, selectedListId!),
-                      child: const Text('Share This List'),
-                    ),),]
-                    
-                  ],),
-                  // Create pantry button
-                  
-                  
-
-                  // Share & Shared users
-                  if (selectedListId != null) ...[
-                    const SizedBox(height: 8),
-                    SharedUsersList(
-                      listId: selectedListId!,
-                      collection: 'Pantries',
-                    ),
+                    const SizedBox(height: 12),
                   ],
-                  const SizedBox(height: 12),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),
+      if (selectedListId != null && selectedShoppingListId != null)
+  Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+    child: ElevatedButton.icon(
+      icon: const Icon(Icons.shopping_cart),
+      label: const Text('Add Checked Items to Shopping List'),
+      onPressed: () async {
+        final checkedItems = items.where((item) => item['checked'] == true).toList();
 
-    Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
-  child: Card(
-    elevation: 2,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    child: ExpansionTile(
-      title: const Text('Select Shopping List'),
-      initiallyExpanded: false,
-      children: [
+        if (checkedItems.isEmpty) {
+          await showDialog(
+            context: context,
+            builder: (context) => const AlertDialog(
+              title: Text('Nothing selected'),
+              content: Text('Please check items to move to the shopping list.'),
+            ),
+          );
+          return;
+        }
+
+        showMoveToShoppingListDialog();
+      },
+    ),
+  ),
+
+
+      const Divider(),
+
+      // 📝 Pantry item list
+      if (selectedListId != null)
+        Expanded(
+          child: ReorderableListView(
+            onReorder: (oldIndex, newIndex) => reorderItems(oldIndex, newIndex),
+            children: [
+              for (int index = 0; index < items.length; index++)
+                buildItem(index, key: ValueKey(items[index]['id'])),
+            ],
+          ),
+        ),
+
+      // ➕ Add item field
+      if (selectedListId != null)
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: DropdownButton<String>(
-            value: selectedShoppingListId,
-            hint: const Text('Select a shopping list'),
-            isExpanded: true,
-            items: shoppingLists.map((list) {
-              return DropdownMenuItem<String>(
-                value: list['id'],
-                child: Text(list['name'] ?? 'Unnamed List'),
-              );
-            }).toList(),
-            onChanged: (value) {
-              setState(() => selectedShoppingListId = value);
+          padding: const EdgeInsets.all(8.0),
+          child: TextField(
+            controller: _ghostController,
+            focusNode: _ghostFocusNode,
+            decoration: const InputDecoration(
+              hintText: 'Add item...',
+              border: OutlineInputBorder(),
+            ),
+            onSubmitted: (value) {
+              if (value.trim().isNotEmpty) {
+                addItemToList(selectedListId!, value.trim());
+                _ghostController.clear();
+              }
+              FocusScope.of(context).requestFocus(_ghostFocusNode);
             },
           ),
         ),
-      ],
-    ),
-  ),
-),
 
-    const Divider(),
-
-    // 📝 Pantry item list
-    if (selectedListId != null)
-      Expanded(
-        child: ReorderableListView(
-          onReorder: (oldIndex, newIndex) =>
-              reorderItems(oldIndex, newIndex),
-          children: [
-            for (int index = 0; index < items.length; index++)
-              buildItem(index, key: ValueKey(items[index]['id'])),
-          ],
-        ),
-      ),
-
-    // ➕ Add item field
-    if (selectedListId != null)
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: TextField(
-          controller: _ghostController,
-          focusNode: _ghostFocusNode,
-          decoration: const InputDecoration(
-            hintText: 'Add item...',
-            border: OutlineInputBorder(),
-          ),
-          onSubmitted: (value) {
-            if (value.trim().isNotEmpty) {
-              addItemToList(selectedListId!, value.trim());
-              _ghostController.clear();
-            }
-            FocusScope.of(context).requestFocus(_ghostFocusNode);
-          },
-        ),
-      ),
-
-    // 🚚 Send ingredients button
-    if (selectedListId != null)
-      Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: ElevatedButton(
-          onPressed: () {
-            final selectedIngredients = items
-                .where((item) => item['checked'] == true)
-                .map<String>((item) => item['item'].toString())
-                .toList();
-
-            Navigator.pushNamed(
-              context,
-              '/ai',
-              arguments: selectedIngredients,
-            );
-          },
-          child: const Text('Send Selected Ingredients'),
-        ),
-      ),
-    
-    if (selectedListId != null && selectedShoppingListId != null)
+      // 🚚 Send ingredients button
+      if (selectedListId != null)
   Padding(
     padding: const EdgeInsets.all(8.0),
-    child: ElevatedButton.icon(
-      icon: const Icon(Icons.shopping_cart),
-      label: const Text('Move Checked to Shopping List'),
-      onPressed: () => moveCheckedToShoppingList(),
+    child: ElevatedButton(
+      onPressed: () async {
+        final selectedIngredients = items
+            .where((item) => item['checked'] == true)
+            .map<String>((item) => item['item'].toString())
+            .toList();
+
+        if (selectedIngredients.isEmpty) {
+          await showDialog(
+            context: context,
+            builder: (context) => const AlertDialog(
+              title: Text('Nothing selected'),
+              content: Text('Please check ingredients to send.'),
+            ),
+          );
+          return; // <-- stop here!
+        }
+
+        Navigator.pushNamed(
+          context,
+          '/ai',
+          arguments: selectedIngredients,
+        );
+      },
+      child: const Text('Send Selected Ingredients'),
     ),
   ),
 
 
-  ],
-),
-
-    );
-  }
+      
+    ],
+  );
 }
+    }
