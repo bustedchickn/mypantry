@@ -18,8 +18,8 @@ class _HomePagerState extends State<HomePager> {
   final pantryKey = GlobalKey<PantryPageState>();
   final shoppingKey = GlobalKey<ShoppingListPageState>();
 
-  bool _showListName = false; // false = show page title, true = show list name
-  bool _animateTitle = false; // whether to animate the AnimatedSwitcher or not
+  bool _showListName = false;
+  bool _animateTitle = false;
   Timer? _timer;
 
   @override
@@ -33,14 +33,17 @@ class _HomePagerState extends State<HomePager> {
     _controller = PageController(initialPage: initialPage);
     _currentPage = initialPage;
   }
+
+  @override
   void dispose() {
     _controller.dispose();
     _timer?.cancel();
     super.dispose();
   }
 
-  void _onPageChanged(int index) {
+void _onPageChanged(int index) {
   _timer?.cancel();
+
   setState(() {
     _currentPage = index;
     _showListName = false;
@@ -48,10 +51,12 @@ class _HomePagerState extends State<HomePager> {
   });
 
   _timer = Timer(const Duration(milliseconds: 1000), () {
-    if (mounted) {
+    if (!mounted) return;
+
+    // Double check again, just in case
+    if (_currentPage == index) {
       setState(() {
         _showListName = true;
-        _animateTitle = true;
       });
     }
   });
@@ -66,28 +71,33 @@ class _HomePagerState extends State<HomePager> {
     final pantryState = pantryKey.currentState;
     final shoppingState = shoppingKey.currentState;
 
-    return Scaffold(
-      appBar: AppBar(
-        title: AnimatedSwitcher(
-  duration: _animateTitle ? const Duration(milliseconds: 500) : Duration.zero,
-  transitionBuilder: (child, animation) {
-    if (!_animateTitle) return child;
-    return RotationTransition(
-      turns: animation,
-      child: FadeTransition(opacity: animation, child: child),
-    );
-  },
-  child: Text(
-    _showListName
+    // ✅ Compute title text once
+    final String titleText = _showListName
         ? (_currentPage == 0
             ? (pantryState?.selectedListName ?? 'Pantry')
             : (shoppingState?.selectedListName ?? 'Shopping List'))
+        : (_currentPage == 0 ? 'Pantry' : 'Shopping List');
+
+    return Scaffold(
+      appBar: AppBar(
+        title: AnimatedSwitcher(
+  duration: _showListName ? const Duration(milliseconds: 300) : Duration.zero,
+  layoutBuilder: (currentChild, previousChildren) {
+    return currentChild!;
+  },
+  transitionBuilder: (child, animation) =>
+      FadeTransition(opacity: animation, child: child),
+  child: Text(
+    _showListName
+        ? (_currentPage == 0
+            ? (pantryKey.currentState?.selectedListName ?? 'Pantry')
+            : (shoppingKey.currentState?.selectedListName ?? 'Shopping List'))
         : (_currentPage == 0 ? 'Pantry' : 'Shopping List'),
     key: ValueKey<String>(
       _showListName
           ? (_currentPage == 0
-              ? (pantryState?.selectedListName ?? 'Pantry')
-              : (shoppingState?.selectedListName ?? 'Shopping List'))
+              ? (pantryKey.currentState?.selectedListName ?? 'Pantry')
+              : (shoppingKey.currentState?.selectedListName ?? 'Shopping List'))
           : (_currentPage == 0 ? 'Pantry' : 'Shopping List'),
     ),
   ),
@@ -98,12 +108,11 @@ class _HomePagerState extends State<HomePager> {
             builder: (context) => IconButton(
               icon: const Icon(Icons.menu),
               tooltip: 'Open navigation',
-              onPressed: () => Scaffold.of(context).openEndDrawer(),
+              onPressed: _openDrawer,
             ),
           ),
         ],
       ),
-
       endDrawer: AppDrawer(pageController: _controller),
       body: PageView(
         controller: _controller,
@@ -119,39 +128,35 @@ class _HomePagerState extends State<HomePager> {
           ),
         ],
       ),
-
       bottomNavigationBar: Padding(
-  padding: const EdgeInsets.only(bottom: 25),
-  child: Row(
-    mainAxisAlignment: MainAxisAlignment.center,
-    children: List.generate(2, (index) {
-      return GestureDetector(
-        onTap: () {
-          if (_currentPage != index) {
-            _controller.animateToPage(
-              index,
-              duration: const Duration(milliseconds: 400),
-              curve: Curves.easeInOut,
+        padding: const EdgeInsets.only(bottom: 25),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(2, (index) {
+            return GestureDetector(
+              onTap: () {
+                if (_currentPage != index) {
+                  _controller.animateToPage(
+                    index,
+                    duration: const Duration(milliseconds: 400),
+                    curve: Curves.easeInOut,
+                  );
+                }
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: _currentPage == index ? 12 : 8,
+                height: _currentPage == index ? 12 : 8,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: _currentPage == index ? Colors.blue : Colors.grey.shade400,
+                ),
+              ),
             );
-          }
-        },
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: _currentPage == index ? 12 : 8,
-          height: _currentPage == index ? 12 : 8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: _currentPage == index
-                ? Colors.blue
-                : Colors.grey.shade400,
-          ),
+          }),
         ),
-      );
-    }),
-  ),
-),
-
+      ),
     );
   }
 }
