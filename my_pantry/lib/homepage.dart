@@ -103,15 +103,6 @@ void _onPageChanged(int index) {
   ),
 ),
 
-        actions: [
-          Builder(
-            builder: (context) => IconButton(
-              icon: const Icon(Icons.menu),
-              tooltip: 'Open navigation',
-              onPressed: _openDrawer,
-            ),
-          ),
-        ],
       ),
       endDrawer: AppDrawer(pageController: _controller),
       body: PageView(
