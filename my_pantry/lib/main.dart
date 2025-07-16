@@ -13,12 +13,9 @@ import 'package:my_pantry/qrcode.dart';
 import 'package:my_pantry/friend.dart';
 import 'package:my_pantry/homepage.dart';
 
-
-
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Check if Firebase is already initialized
   try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
@@ -27,21 +24,53 @@ void main() async {
     print("Firebase already initialized: $e");
   }
 
-  runApp(MyPantryApp());
+  runApp(const MyPantryApp());
 }
 
-
-class MyPantryApp extends StatelessWidget {
+class MyPantryApp extends StatefulWidget {
   const MyPantryApp({super.key});
+
+  @override
+  State<MyPantryApp> createState() => _MyPantryAppState();
+}
+
+class _MyPantryAppState extends State<MyPantryApp> {
+  ThemeMode _themeMode = ThemeMode.system;
+
+  void toggleTheme() {
+    setState(() {
+      _themeMode = _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      theme: ThemeData(useMaterial3: true),
+      theme: ThemeData(
+        brightness: Brightness.light,
+        primarySwatch: Colors.blue,
+        primaryColor: Color.fromARGB(255, 255, 151, 151),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          
+        ),
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blue,
+        
+        primaryColor: Color.fromARGB(255, 128, 17, 17),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.black,
+          foregroundColor: Colors.white,
+        ),
+      ),
+      
+      
+      
+      themeMode: _themeMode, // uses the state!
       title: 'My Pantry',
-      // Start the app with the "/" named route.
-      // The app starts
-      // on the Welcome page.
       home: const AuthWrapper(),
       routes: {
         '/friends': (context) => const FriendsPage(),
@@ -49,11 +78,11 @@ class MyPantryApp extends StatelessWidget {
         '/sign_up': (context) => const SignUpPage(),
         '/pantry': (context) => const PantryPage(),
         '/shopping': (context) => const ShoppingListPage(),
-        '/settings':(context) => const SettingsPage(),
+        '/settings': (context) => SettingsPage(toggleTheme: toggleTheme), // ✅ passes toggleTheme
         '/account': (context) => const AccountPage(),
-        '/ai':(context) => const RecipeListScreen(),
-        '/qr':(context) => const QRScannerPage(),
-        '/homepager':(context) => const HomePager(),
+        '/ai': (context) => const RecipeListScreen(),
+        '/qr': (context) => const QRScannerPage(),
+        '/homepager': (context) => const HomePager(),
       },
     );
   }
@@ -71,9 +100,9 @@ class AuthWrapper extends StatelessWidget {
           return const Scaffold(body: Center(child: CircularProgressIndicator()));
         }
         if (snapshot.hasData) {
-          return const HomePager(); // Signed in
+          return const HomePager();
         } else {
-          return const SignInPage(); // Not signed in
+          return const SignInPage();
         }
       },
     );

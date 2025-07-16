@@ -404,7 +404,7 @@ class ShoppingListPageState extends State<ShoppingListPage> {
     child: Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: Color.fromARGB(163, 255, 255, 255), // ✅ frosted patch for each item
+        color: Theme.of(context).cardColor.withOpacity(0.9), // ✅ frosted patch for each item
         borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
@@ -453,10 +453,10 @@ Widget build(BuildContext context) {
         padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 6.0),
         child: Card(
           elevation: 2,
-          color: Color.fromARGB(255, 255, 255, 255),
+          // color: Color.fromARGB(255, 255, 255, 255),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           child: Container(
-            color: Color.fromARGB(255, 255, 255, 255),
+            // color: Color.fromARGB(255, 255, 255, 255),
             child: ExpansionTile(
             title: const Text('Manage Shopping List'),
             initiallyExpanded: false,
@@ -593,7 +593,7 @@ Widget build(BuildContext context) {
             hintText: 'Add item...',
             border: OutlineInputBorder(),
             filled: true,
-            fillColor: Color.fromARGB(231, 255, 255, 255),
+
           ),
           onSubmitted: (value) {
             if (value.trim().isNotEmpty) {

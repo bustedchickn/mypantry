@@ -11,8 +11,8 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: [
-          const DrawerHeader(
-            decoration: BoxDecoration(color: Color.fromARGB(255, 128, 17, 17)),
+          DrawerHeader(
+            decoration: BoxDecoration(color: Theme.of(context).primaryColor),
             child: Text(''),
           ),
           ListTile(
