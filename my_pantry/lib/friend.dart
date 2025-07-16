@@ -185,6 +185,7 @@ class _FriendsPageState extends State<FriendsPage> {
                 );
               },
             ),
+            
             const SizedBox(height: 24),
             const Text('Your Friends', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),

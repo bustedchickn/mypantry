@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:my_pantry/pantry.dart';
 import 'package:my_pantry/shopping.dart';
 import 'package:my_pantry/widgets/appdrawer.dart';
+import 'package:my_pantry/widgets/swirl_bg.dart';
 
 class HomePager extends StatefulWidget {
   const HomePager({super.key});
@@ -14,6 +15,8 @@ class HomePager extends StatefulWidget {
 class _HomePagerState extends State<HomePager> {
   late PageController _controller = PageController(initialPage: 0);
   int _currentPage = 0;
+  late AnimationController _swirlController;
+
 
   final pantryKey = GlobalKey<PantryPageState>();
   final shoppingKey = GlobalKey<ShoppingListPageState>();
@@ -33,6 +36,7 @@ class _HomePagerState extends State<HomePager> {
     _controller = PageController(initialPage: initialPage);
     _currentPage = initialPage;
   }
+  
 
   @override
   void dispose() {
@@ -78,49 +82,46 @@ void _onPageChanged(int index) {
             : (shoppingState?.selectedListName ?? 'Shopping List'))
         : (_currentPage == 0 ? 'Pantry' : 'Shopping List');
 
-    return Scaffold(
-      appBar: AppBar(
-        title: AnimatedSwitcher(
-  duration: _showListName ? const Duration(milliseconds: 300) : Duration.zero,
-  layoutBuilder: (currentChild, previousChildren) {
-    return currentChild!;
-  },
-  transitionBuilder: (child, animation) =>
-      FadeTransition(opacity: animation, child: child),
-  child: Text(
-    _showListName
-        ? (_currentPage == 0
-            ? (pantryKey.currentState?.selectedListName ?? 'Pantry')
-            : (shoppingKey.currentState?.selectedListName ?? 'Shopping List'))
-        : (_currentPage == 0 ? 'Pantry' : 'Shopping List'),
-    key: ValueKey<String>(
-      _showListName
-          ? (_currentPage == 0
-              ? (pantryKey.currentState?.selectedListName ?? 'Pantry')
-              : (shoppingKey.currentState?.selectedListName ?? 'Shopping List'))
-          : (_currentPage == 0 ? 'Pantry' : 'Shopping List'),
+  return Scaffold(
+  appBar: AppBar(
+    title: AnimatedSwitcher(
+      duration: _showListName ? const Duration(milliseconds: 300) : Duration.zero,
+      transitionBuilder: (child, animation) =>
+          FadeTransition(opacity: animation, child: child),
+      child: Text(
+        titleText,
+        key: ValueKey<String>(titleText),
+      ),
     ),
   ),
-),
+  endDrawer: AppDrawer(pageController: _controller),
+  body: Stack(
+    children: [
+      const SwirlBackground(),
 
+      // Main content
+      Positioned.fill(
+        child: PageView(
+          controller: _controller,
+          onPageChanged: _onPageChanged,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(bottom: 32.0),
+              child: PantryPage(key: pantryKey),
+            ),
+            Padding(
+              padding: const EdgeInsets.only(bottom: 32.0),
+              child: ShoppingListPage(key: shoppingKey),
+            ),
+          ],
+        ),
       ),
-      endDrawer: AppDrawer(pageController: _controller),
-      body: PageView(
-        controller: _controller,
-        onPageChanged: _onPageChanged,
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
-            child: PantryPage(key: pantryKey),
-          ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 32.0),
-            child: ShoppingListPage(key: shoppingKey),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(bottom: 25),
+
+      // Bottom nav dots OVER the swirl
+      Positioned(
+        bottom: 25,
+        left: 0,
+        right: 0,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(2, (index) {
@@ -148,6 +149,9 @@ void _onPageChanged(int index) {
           }),
         ),
       ),
-    );
+    ],
+  ),
+);
+
   }
 }

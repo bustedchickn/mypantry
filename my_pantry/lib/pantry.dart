@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:my_pantry/widgets/shared_users_list.dart';
+import 'package:my_pantry/widgets/swirl_bg.dart';
+
 
 class PantryPage extends StatefulWidget {
   const PantryPage({super.key});
@@ -419,7 +421,7 @@ class PantryPageState extends State<PantryPage>
 }
 
 
-
+final shouldShowSendButton = true;
 
 
   // adding delete function
@@ -465,23 +467,74 @@ class PantryPageState extends State<PantryPage>
         .dispose(); // for removing the animation of the  trash can
   }
 
-  Widget buildItem(int index, {required Key key}) {
-    final item = items[index];
-    final controller = controllerMap[item['id']]!;
+  // Widget buildItem(int index, {required Key key}) {
+  //   final item = items[index];
+  //   final controller = controllerMap[item['id']]!;
 
-    return Dismissible(
-      key: key,
-      direction: DismissDirection.endToStart,
-      background: Container(
-        color: Colors.red,
-        alignment: Alignment.centerRight,
-        padding: EdgeInsets.symmetric(horizontal: 20),
-        child: Icon(Icons.delete, color: Colors.white),
+  //   return Dismissible(
+  //     key: key,
+  //     direction: DismissDirection.endToStart,
+  //     background: Container(
+  //       color: Colors.red,
+  //       alignment: Alignment.centerRight,
+  //       padding: EdgeInsets.symmetric(horizontal: 20),
+  //       child: Icon(Icons.delete, color: Colors.white),
+  //     ),
+  //     onDismissed: (direction) {
+  //       if (selectedListId != null) removeItemById(selectedListId!, item['id']);
+  //     },
+
+  //     child: ListTile(
+  //       leading: Checkbox(
+  //         value: item['checked'],
+  //         onChanged: (_) {
+  //           if (selectedListId != null) toggleCheck(selectedListId!, index);
+  //         },
+  //       ),
+  //       title: TextField(
+  //         controller: controller,
+  //         decoration: InputDecoration(border: InputBorder.none),
+  //         onChanged: (value) {
+  //           if (selectedListId != null)
+  //             updateItem(selectedListId!, index, value);
+  //         },
+  //       ),
+  //       trailing: Icon(Icons.drag_handle),
+  //     ),
+  //   );
+  // }
+
+
+Widget buildItem(int index, {required Key key}) {
+  final item = items[index];
+  final controller = controllerMap[item['id']]!;
+
+  return Dismissible(
+    key: key,
+    direction: DismissDirection.endToStart,
+    background: Container(
+      color: Colors.red,
+      alignment: Alignment.centerRight,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: const Icon(Icons.delete, color: Colors.white),
+    ),
+    onDismissed: (direction) {
+      if (selectedListId != null) removeItemById(selectedListId!, item['id']);
+    },
+
+    child: Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: Color.fromARGB(163, 255, 255, 255), // ✅ frosted patch for each item
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.white.withOpacity(0.3), // 💡 white glow
+            blurRadius: 12, // strength of blur
+            spreadRadius: 2, // how far it spreads
+          ),
+        ],
       ),
-      onDismissed: (direction) {
-        if (selectedListId != null) removeItemById(selectedListId!, item['id']);
-      },
-
       child: ListTile(
         leading: Checkbox(
           value: item['checked'],
@@ -491,16 +544,22 @@ class PantryPageState extends State<PantryPage>
         ),
         title: TextField(
           controller: controller,
-          decoration: InputDecoration(border: InputBorder.none),
+          decoration: const InputDecoration(
+            border: InputBorder.none,
+            hintText: 'Item',
+          ),
           onChanged: (value) {
-            if (selectedListId != null)
+            if (selectedListId != null) {
               updateItem(selectedListId!, index, value);
+            }
           },
         ),
-        trailing: Icon(Icons.drag_handle),
+        trailing: const Icon(Icons.drag_handle),
       ),
-    );
-  }
+    ),
+  );
+}
+
 
   @override
 Widget build(BuildContext context) {
@@ -625,60 +684,75 @@ Widget build(BuildContext context) {
 
       // ➕ Add item field
       if (selectedListId != null)
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: TextField(
-            controller: _ghostController,
-            focusNode: _ghostFocusNode,
-            decoration: const InputDecoration(
-              hintText: 'Add item...',
-              border: OutlineInputBorder(),
-            ),
-            onSubmitted: (value) {
-              if (value.trim().isNotEmpty) {
-                addItemToList(selectedListId!, value.trim());
-                _ghostController.clear();
-              }
-              FocusScope.of(context).requestFocus(_ghostFocusNode);
-            },
-          ),
-        ),
-
-      // 🚚 Send ingredients button
-      if (selectedListId != null)
   Padding(
     padding: const EdgeInsets.all(8.0),
-    child: ElevatedButton(
-      onPressed: () async {
-        final selectedIngredients = items
-            .where((item) => item['checked'] == true)
-            .map<String>((item) => item['item'].toString())
-            .toList();
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        TextField(
+          controller: _ghostController,
+          focusNode: _ghostFocusNode,
+          decoration: const InputDecoration(
+            hintText: 'Add item...',
+            border: OutlineInputBorder(),
+            filled: true,
+            fillColor: Color.fromARGB(231, 255, 255, 255),
+          ),
+          onSubmitted: (value) {
+            if (value.trim().isNotEmpty) {
+              addItemToList(selectedListId!, value.trim());
+              _ghostController.clear();
+            }
+            FocusScope.of(context).requestFocus(_ghostFocusNode);
+          },
+        ),
 
-        if (selectedIngredients.isEmpty) {
-          await showDialog(
-            context: context,
-            builder: (context) => const AlertDialog(
-              title: Text('Nothing selected'),
-              content: Text('Please check ingredients to send.'),
-            ),
-          );
-          return; // <-- stop here!
-        }
+        const SizedBox(height: 8),
 
-        Navigator.pushNamed(
-          context,
-          '/ai',
-          arguments: selectedIngredients,
-        );
-      },
-      child: const Text('Send Selected Ingredients'),
+        if (shouldShowSendButton)
+          ElevatedButton(
+            onPressed: () async {
+              final selectedIngredients = items
+                  .where((item) => item['checked'] == true)
+                  .map<String>((item) => item['item'].toString())
+                  .toList();
+
+              if (selectedIngredients.isEmpty) {
+                await showDialog(
+                  context: context,
+                  builder: (context) => const AlertDialog(
+                    title: Text('Nothing selected'),
+                    content: Text('Please check ingredients to send.'),
+                  ),
+                );
+                return;
+              }
+
+              Navigator.pushNamed(
+                context,
+                '/ai',
+                arguments: selectedIngredients,
+              );
+            },
+            child: const Text('Send Selected Ingredients'),
+          )
+        else
+          // 👇 Reserve same height as the button so layout stays consistent
+          const SizedBox(height: 48), // match button height
+      ],
     ),
   ),
+
 
 
       
     ],
   );
 }
+
+
+
+
+
     }

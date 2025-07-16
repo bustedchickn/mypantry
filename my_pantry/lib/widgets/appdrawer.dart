@@ -12,8 +12,8 @@ class AppDrawer extends StatelessWidget {
         padding: EdgeInsets.zero,
         children: [
           const DrawerHeader(
-            decoration: BoxDecoration(color: Colors.yellow),
-            child: Text('Pages'),
+            decoration: BoxDecoration(color: Color.fromARGB(255, 128, 17, 17)),
+            child: Text(''),
           ),
           ListTile(
   title: const Text('Pantry'),
